@@ -27,7 +27,6 @@ class DBManager(metaclass=Singleton):
         self.engine = create_engine(configuration.DATABASE)
         session = sessionmaker(bind=self.engine)
         self.session = session()
-        print(path.isfile(configuration.DATABASE))
         if not path.isfile(configuration.DATABASE):
             Base.metadata.create_all(self.engine)
 
@@ -56,3 +55,6 @@ class DBManager(metaclass=Singleton):
         state = current_user.state
         self.close()
         return state
+
+    def reset_user_data(self, user_id):
+        pass

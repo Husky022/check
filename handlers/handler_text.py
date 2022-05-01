@@ -9,12 +9,14 @@ class HandlerText(Handler):
         super().__init__(bot)
 
     def get_photos_report(self, message):
-        self.bot.send_message(message.chat.id, f'{api_request.request_photo(message.text)}',
-                              parse_mode='HTML')
+        for el in api_request.request_photo(message.text):
+            self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
     def handle(self):
+        print('handle_text_start')
         @self.bot.message_handler(func=lambda message: True)
         def handle(message):
+            print('handle_text')
             if self.DB.get_user_state(message.from_user.id) == configuration.STATES['PHOTO_SET_REGNUMBER']:
                 print('entering_regnumber_for_photo')
                 self.get_photos_report(message)

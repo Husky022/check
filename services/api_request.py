@@ -17,8 +17,11 @@ urls = {
 
 def get_response(type, params):
     response = requests.get(urls[type], params=params)
-    print(response.text)
-    return response.text
+    recors_list = response.json()['records']
+    images_list = []
+    for el in recors_list:
+        images_list.append(el['bigPhoto'])
+    return images_list
 
 
 def request_gibdd():
@@ -28,7 +31,9 @@ def request_gibdd():
 def request_photo(regnumber):
     request_params = params
     request_params.update({'type': 'regnum', 'regNum': regnumber})
-    get_response('photo', request_params)
+    images_list = get_response('photo', request_params)
+    return images_list
+
 
 def request_fines():
     pass

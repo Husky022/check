@@ -13,9 +13,10 @@ class HandlerCommands(Handler):
                               reply_markup=self.keyboards.start_menu())
 
     def handle(self):
+        print('handle_commands_start')
         @self.bot.message_handler(commands=['start'])
         def handle(message):
-            print(message)
+            print('handle_commands')
             if message.text == '/start':
                 self.pressed_btn_start(message)
             else:

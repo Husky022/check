@@ -14,6 +14,7 @@ class HandlerButtons(Handler):
                               parse_mode='HTML',
                               reply_markup=self.keyboards.start_menu())
 
+
     def pressed_btn_info(self, message):
         self.bot.send_message(message.chat.id, MESSAGES['info'],
                               parse_mode='HTML',
@@ -41,8 +42,11 @@ class HandlerButtons(Handler):
                               reply_markup=self.keyboards.photo_menu())
 
     def handle(self):
-        @self.bot.message_handler(func=lambda message: True)
+        print('handle_buttons_start')
+
+        @self.bot.message_handler(func=lambda message: message.text in configuration.KEYBOARD.values())
         def handle(message):
+            print('handle_buttons')
             if message.text == configuration.KEYBOARD['<<']:
                 self.pressed_btn_back(message)
             if message.text == configuration.KEYBOARD['INFO']:
@@ -55,4 +59,3 @@ class HandlerButtons(Handler):
                 self.pressed_btn_fines(message)
             if message.text == configuration.KEYBOARD['PRICE']:
                 self.pressed_btn_price(message)
-

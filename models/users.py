@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, DateTime, BigInteger, BOOLEAN, String
 
+from sqlalchemy_utils import JSONType
+
 from database.dbcore import Base
 
 
@@ -10,6 +12,7 @@ class User(Base):
     name = Column(String)
     user_id = Column(BigInteger)
     state = Column(String, default='0')
+    cache = Column(JSONType)
     subscribe = Column(BOOLEAN, default=False)
 
     def __init__(self, user_id, name):
