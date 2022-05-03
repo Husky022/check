@@ -13,7 +13,7 @@ class User(Base):
     user_id = Column(BigInteger)
     state = Column(String, default='0')
     cache = Column(JSONType)
-    subscribe = Column(BOOLEAN, default=False)
+    subscribe = Column(JSONType)
 
     def __init__(self, user_id, name):
         self.user_id = user_id

@@ -24,7 +24,7 @@ class Singleton(type):
 
 class DBManager(metaclass=Singleton):
     def __init__(self):
-        self.engine = create_engine(configuration.DATABASE)
+        self.engine = create_engine(configuration.DATABASE, connect_args={'check_same_thread': False})
         session = sessionmaker(bind=self.engine)
         self.session = session()
         if not path.isfile(configuration.DATABASE):
@@ -36,8 +36,11 @@ class DBManager(metaclass=Singleton):
     def commit(self):
         self.session.commit()
 
+    def choose_user(self, user_id):
+        return self.session.query(User).filter_by(user_id=user_id).first()
+
     def add_new_user(self, user_id, name):
-        current_user = self.session.query(User).filter_by(user_id=user_id)
+        current_user = self.choose_user(user_id)
         if not current_user:
             new_user = User(user_id, name)
             self.session.add(new_user)
@@ -45,16 +48,26 @@ class DBManager(metaclass=Singleton):
             self.close()
 
     def set_user_state(self, user_id, state):
-        current_user = self.session.query(User).filter_by(user_id=user_id).first()
+        current_user = self.choose_user(user_id)
         current_user.state = state
         self.commit()
         self.close()
 
     def get_user_state(self, user_id):
-        current_user = self.session.query(User).filter_by(user_id=user_id).first()
+        current_user = self.choose_user(user_id)
         state = current_user.state
         self.close()
         return state
 
     def reset_user_data(self, user_id):
-        pass
+        current_user = self.choose_user(user_id)
+        current_user.state = '0'
+        current_user.cache = {}
+        self.commit()
+        self.close()
+
+    def set_user_cache(self, user_id, data):
+        current_user = self.choose_user(user_id)
+        current_user.cache = data
+        self.commit()
+        self.close()

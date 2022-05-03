@@ -12,12 +12,55 @@ class HandlerText(Handler):
         for el in api_request.request_photo(message.text):
             self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
+    def get_gibdd_report(self, vin):
+        api_request.request_gibdd(vin)
+
+    def get_fines_report(self, regnum, sts):
+        api_request.request_fines(regnum, sts)
+
+
+
     def handle(self):
         print('handle_text_start')
-        @self.bot.message_handler(func=lambda message: True)
-        def handle(message):
-            print('handle_text')
-            if self.DB.get_user_state(message.from_user.id) == configuration.STATES['PHOTO_SET_REGNUMBER']:
-                print('entering_regnumber_for_photo')
-                self.get_photos_report(message)
 
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['PHOTO_SET_REGNUMBER'])
+        def entering_number_photo(message):
+            print('handle_text')
+            print('entering_regnumber_for_photo')
+            self.get_photos_report(message)
+            self.DB.reset_user_data(message.from_user.id)
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['GIBDD_SET_VIN'])
+        def entering_vin_gibdd(message):
+            print('handle_text')
+            print('entering_vin_gibdd')
+            self.get_gibdd_report(message.text)
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['FINES_SET_REGNUMBER'])
+        def entering_regnum_fines(message):
+            print('handle_text')
+            print('entering_regnum_fines')
+            self.DB.set_user_state(message.from_user.id, configuration.STATES['FINES_SET_STSNUMBER'])
+            self.DB.set_user_cache(message.from_user.id, {'regnum': message.text})
+            self.bot.send_message(message.chat.id, 'Теперь введите номер свидетельства ТС',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['FINES_SET_STSNUMBER'])
+        def entering_sts_fines(message):
+            print('handle_text')
+            print('entering_sts_fines')
+            current_user = self.DB.choose_user(message.from_user.id)
+            self.get_fines_report(current_user.cache['regnum'], message.text)
+        #
+        # @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+        #     message.from_user.id) == configuration.STATES['GIBDD_SET_REGNUMBER'])
+        # def entering_number_gibdd(message):
+        #     print('handle_text')
+        #     print('entering_number_gibdd')
+        #     current_user = self.DB.choose_user(message.from_user.id)
+        #     self.get_gibdd_report(message.text, current_user.cache['vin'])
