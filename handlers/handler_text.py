@@ -12,11 +12,21 @@ class HandlerText(Handler):
         for el in api_request.request_photo(message.text):
             self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
+
     def get_gibdd_report(self, vin):
         api_request.request_gibdd(vin)
 
+
     def get_fines_report(self, regnum, sts):
         api_request.request_fines(regnum, sts)
+
+
+    def get_price(self, message, cache, probeg):
+        price = api_request.request_price(cache, probeg)
+        self.bot.send_message(message.chat.id, f'Ориентировочная рыночная стоимость составляет {price["cost"]} руб. ' +
+                              f'Если рассматривать Traid In, то {price["cost_trade_in"]} руб.',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
 
 
 
@@ -64,3 +74,11 @@ class HandlerText(Handler):
         #     print('entering_number_gibdd')
         #     current_user = self.DB.choose_user(message.from_user.id)
         #     self.get_gibdd_report(message.text, current_user.cache['vin'])
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['PRICE_SET_PROBEG'])
+        def entering_probeg_checkprice(message):
+            print('handle_text')
+            print('entering_sts_fines')
+            current_user = self.DB.choose_user(message.from_user.id)
+            self.get_price(message, current_user.cache, message.text)

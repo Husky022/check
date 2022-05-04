@@ -40,9 +40,9 @@ class HandlerButtons(Handler):
         self.DB.set_user_state(message.from_user.id, configuration.STATES['FINES_SET_REGNUMBER'])
 
     def pressed_btn_price(self, message):
-        self.bot.send_message(message.chat.id, 'test',
+        self.bot.send_message(message.chat.id, 'Выберите марку автомобиля',
                               parse_mode='HTML',
-                              reply_markup=self.keyboards.menu_with_btn_back())
+                              reply_markup=self.keyboards.menu_autos(configuration.AUTOS))
         self.DB.set_user_state(message.from_user.id, configuration.STATES['PRICE_SET_MARKA'])
 
     def pressed_btn_fssp(self, message):
@@ -86,3 +86,42 @@ class HandlerButtons(Handler):
                 self.pressed_btn_yur(message)
             if message.text == configuration.KEYBOARD['ID']:
                 self.pressed_btn_id(message)
+
+            # работа с оценкой авто
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data.from_user.id) == configuration.STATES['PRICE_SET_MARKA'])
+        def handle_inline(callback_data):
+            self.bot.send_message(callback_data.message.chat.id, 'Теперь выберите модель авто',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_autos(api_request.request_models(callback_data.data)))
+            self.DB.set_user_state(callback_data.from_user.id, configuration.STATES['PRICE_SET_MODEL'])
+            self.DB.set_user_cache(callback_data.from_user.id, {'marka': callback_data.data})
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data.from_user.id) == configuration.STATES['PRICE_SET_MODEL'])
+        def handle_inline(callback_data):
+            self.bot.send_message(callback_data.message.chat.id, 'Укажите год авто',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_autos(
+                                      api_request.request_year(
+                                          self.DB.get_user_cache(callback_data.from_user.id)['marka'],
+                                          callback_data.data
+                                      )))
+            self.DB.set_user_state(callback_data.from_user.id, configuration.STATES['PRICE_SET_YEAR'])
+            self.DB.set_user_cache(callback_data.from_user.id, {
+                'marka': self.DB.get_user_cache(callback_data.from_user.id)['marka'],
+                'model': callback_data.data
+            })
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data.from_user.id) == configuration.STATES['PRICE_SET_YEAR'])
+        def handle_inline(callback_data):
+            self.bot.send_message(callback_data.message.chat.id, 'Укажите пробег авто в км',
+                                  parse_mode='HTML')
+            self.DB.set_user_state(callback_data.from_user.id, configuration.STATES['PRICE_SET_PROBEG'])
+            self.DB.set_user_cache(callback_data.from_user.id, {
+                'marka': self.DB.get_user_cache(callback_data.from_user.id)['marka'],
+                'model': self.DB.get_user_cache(callback_data.from_user.id)['model'],
+                'year': callback_data.data
+            })

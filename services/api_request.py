@@ -15,7 +15,9 @@ urls = {
     'eaisto': REQUEST_GIBDD,
     'photo': REQUEST_PHOTO,
     'fines': REQUEST_FINES,
-    'price': REQUEST_PRICE
+    'price': REQUEST_PRICE,
+    'chekmodel': REQUEST_PRICE,
+    'chekyear': REQUEST_PRICE,
 }
 
 
@@ -58,8 +60,30 @@ def request_fines(regnum, sts):
     pass
 
 
-def request_price():
-    pass
+def request_models(marka):
+    request_params = params
+    request_params.update({'type': 'chekmodel', 'marka': marka})
+    report = get_response('chekmodel', request_params)
+    return report.json()['models']
+
+
+def request_year(marka, model):
+    request_params = params
+    request_params.update({'type': 'chekyear', 'marka': marka, 'model': model})
+    report = get_response('chekyear', request_params)
+    return report.json()['years']
+
+
+def request_price(cache, probeg):
+    request_params = params
+    request_params.update({'type': 'price',
+                           'marka': cache['marka'],
+                           'model': cache['model'],
+                           'year': cache['year'],
+                           'probeg': probeg
+                           })
+    report = get_response('price', request_params)
+    return report.json()
 
 
 def fssp():

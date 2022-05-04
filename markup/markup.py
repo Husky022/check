@@ -1,6 +1,7 @@
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from settings import configuration
 from database.dbalchemy import DBManager
+from keyboa import Keyboa
 
 
 class Keyboards:
@@ -38,4 +39,9 @@ class Keyboards:
         itm_btn_4 = self.set_button('<<')
         self.markup.row(itm_btn_1, itm_btn_2)
         self.markup.row(itm_btn_3, itm_btn_4)
+        return self.markup
+
+    def menu_autos(self, autos_list):
+        self.markup = Keyboa(items=autos_list, copy_text_to_callback=True,
+                             items_in_row=4).keyboard
         return self.markup

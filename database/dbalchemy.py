@@ -71,3 +71,10 @@ class DBManager(metaclass=Singleton):
         current_user.cache = data
         self.commit()
         self.close()
+
+    def get_user_cache(self, user_id):
+        current_user = self.choose_user(user_id)
+        cache = current_user.cache
+        self.close()
+        return cache
+
