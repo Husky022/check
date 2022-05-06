@@ -1,5 +1,5 @@
 import requests
-from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE
+from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP
 
 api_token = API
 
@@ -18,6 +18,7 @@ urls = {
     'price': REQUEST_PRICE,
     'chekmodel': REQUEST_PRICE,
     'chekyear': REQUEST_PRICE,
+    'fssp': REQUEST_FSSP,
 }
 
 
@@ -86,5 +87,22 @@ def request_price(cache, probeg):
     return report.json()
 
 
-def fssp():
-    pass
+def request_regions():
+    request_params = params
+    request_params.update({'type': 'regionsList'})
+    report = get_response('fssp', request_params)
+    return report.json()['rez']
+
+
+def request_fssp_fiz(data):
+    request_params = params
+    request_params.update(
+        {
+            'type': 'physical',
+            'firstname': data['firstname'],
+            'lastname': data['lastname'],
+            'region': data['region']
+        }
+    )
+    report = get_response('fssp', request_params)
+    return report.json()

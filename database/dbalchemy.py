@@ -39,10 +39,10 @@ class DBManager(metaclass=Singleton):
     def choose_user(self, user_id):
         return self.session.query(User).filter_by(user_id=user_id).first()
 
-    def add_new_user(self, user_id, name):
+    def add_new_user(self, user_id, name, username):
         current_user = self.choose_user(user_id)
         if not current_user:
-            new_user = User(user_id, name)
+            new_user = User(user_id, name, username)
             self.session.add(new_user)
             self.commit()
             self.close()

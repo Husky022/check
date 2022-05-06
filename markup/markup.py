@@ -41,7 +41,7 @@ class Keyboards:
         self.markup.row(itm_btn_3, itm_btn_4)
         return self.markup
 
-    def menu_autos(self, autos_list):
-        self.markup = Keyboa(items=autos_list, copy_text_to_callback=True,
+    def keybord_inline(self, current_list):
+        self.markup = Keyboa(items=current_list, copy_text_to_callback=True,
                              items_in_row=4).keyboard
         return self.markup

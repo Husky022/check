@@ -1,4 +1,5 @@
 from .configuration import VERSION, AUTHOR
+import datetime
 
 
 info = """
@@ -12,11 +13,21 @@ info = """
 
 """.format(VERSION, AUTHOR)
 
+car_report = """
+
+<b>Отчет об авто {} {} от {}</b>
+
+-<b>VIN: - </b><i>{}</i>
+-<b>VIN: - </b><i>{}</i>
+
+"""
+
 settings = """
 
 """
 
 MESSAGES = {
     'info': info,
-    'settings': settings
+    'settings': settings,
+    'car_report': car_report
 }

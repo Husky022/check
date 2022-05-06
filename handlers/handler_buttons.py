@@ -42,7 +42,7 @@ class HandlerButtons(Handler):
     def pressed_btn_price(self, message):
         self.bot.send_message(message.chat.id, 'Выберите марку автомобиля',
                               parse_mode='HTML',
-                              reply_markup=self.keyboards.menu_autos(configuration.AUTOS))
+                              reply_markup=self.keyboards.keybord_inline(configuration.AUTOS))
         self.DB.set_user_state(message.from_user.id, configuration.STATES['PRICE_SET_MARKA'])
 
     def pressed_btn_fssp(self, message):
@@ -51,7 +51,10 @@ class HandlerButtons(Handler):
                               reply_markup=self.keyboards.menu_fssp())
 
     def pressed_btn_fiz(self, message):
-        pass
+        self.bot.send_message(message.chat.id, 'Введите фамилию',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_FIZ_L_NAME'])
 
     def pressed_btn_yur(self, message):
         pass
@@ -59,13 +62,15 @@ class HandlerButtons(Handler):
     def pressed_btn_id(self, message):
         pass
 
+    def get_report_fssp_fiz(self, user_id):
+        current_user = self.DB.choose_user(user_id)
+        print(api_request.request_fssp_fiz(current_user.cache))
+
 
     def handle(self):
-        print('handle_buttons_start')
 
         @self.bot.message_handler(func=lambda message: message.text in configuration.KEYBOARD.values())
         def handle(message):
-            print('handle_buttons')
             if message.text == configuration.KEYBOARD['<<']:
                 self.pressed_btn_back(message)
             if message.text == configuration.KEYBOARD['INFO']:
@@ -94,7 +99,7 @@ class HandlerButtons(Handler):
         def handle_inline(callback_data):
             self.bot.send_message(callback_data.message.chat.id, 'Теперь выберите модель авто',
                                   parse_mode='HTML',
-                                  reply_markup=self.keyboards.menu_autos(api_request.request_models(callback_data.data)))
+                                  reply_markup=self.keyboards.keybord_inline(api_request.request_models(callback_data.data)))
             self.DB.set_user_state(callback_data.from_user.id, configuration.STATES['PRICE_SET_MODEL'])
             self.DB.set_user_cache(callback_data.from_user.id, {'marka': callback_data.data})
 
@@ -103,7 +108,7 @@ class HandlerButtons(Handler):
         def handle_inline(callback_data):
             self.bot.send_message(callback_data.message.chat.id, 'Укажите год авто',
                                   parse_mode='HTML',
-                                  reply_markup=self.keyboards.menu_autos(
+                                  reply_markup=self.keyboards.keybord_inline(
                                       api_request.request_year(
                                           self.DB.get_user_cache(callback_data.from_user.id)['marka'],
                                           callback_data.data
@@ -125,3 +130,15 @@ class HandlerButtons(Handler):
                 'model': self.DB.get_user_cache(callback_data.from_user.id)['model'],
                 'year': callback_data.data
             })
+
+            # работа с фссп
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data.from_user.id) == configuration.STATES['FSSP_FIZ_REGION_NAME'])
+        def handle_inline(callback_data):
+            self.DB.set_user_cache(callback_data.from_user.id, {
+                'lastname': self.DB.get_user_cache(callback_data.from_user.id)['lastname'],
+                'firstname': self.DB.get_user_cache(callback_data.from_user.id)['firstname'],
+                'region': callback_data.data
+            })
+            self.get_report_fssp_fiz(callback_data.from_user.id)
