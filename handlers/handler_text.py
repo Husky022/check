@@ -13,8 +13,10 @@ class HandlerText(Handler):
             self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
 
-    def get_gibdd_report(self, vin):
-        api_request.request_gibdd(vin)
+    def get_gibdd_report(self, message):
+        self.bot.send_message(message.chat.id, api_request.request_gibdd(message.text),
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
 
 
     def get_fines_report(self, regnum, sts):
@@ -29,6 +31,7 @@ class HandlerText(Handler):
                               reply_markup=self.keyboards.menu_with_btn_back())
 
 
+    # работа с фото
 
     def handle(self):
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
@@ -37,10 +40,14 @@ class HandlerText(Handler):
             self.get_photos_report(message)
             self.DB.reset_user_data(message.from_user.id)
 
+        # работа с отчетом по vin
+
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message.from_user.id) == configuration.STATES['GIBDD_SET_VIN'])
         def entering_vin_gibdd(message):
-            self.get_gibdd_report(message.text)
+            self.get_gibdd_report(message)
+
+        # работа со штрафами
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message.from_user.id) == configuration.STATES['FINES_SET_REGNUMBER'])
@@ -57,11 +64,15 @@ class HandlerText(Handler):
             current_user = self.DB.choose_user(message.from_user.id)
             self.get_fines_report(current_user.cache['regnum'], message.text)
 
+        # работа с оценкой
+
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message.from_user.id) == configuration.STATES['PRICE_SET_PROBEG'])
         def entering_probeg_checkprice(message):
             current_user = self.DB.choose_user(message.from_user.id)
             self.get_price(message, current_user.cache, message.text)
+
+        # работа с фссп
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message.from_user.id) == configuration.STATES['FSSP_FIZ_L_NAME'])
@@ -81,13 +92,24 @@ class HandlerText(Handler):
                                        'lastname': self.DB.get_user_cache(message.from_user.id)['lastname'],
                                        'firstname': message.text
                                    })
-            api_request.request_regions()
             self.bot.send_message(message.chat.id, 'Выберите регион поиска',
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.keybord_inline(list(api_request.request_regions(
                                   ).keys())))
 
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['FSSP_YUR_NAME'])
+        def entering_yurname_fssp(message):
+            self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_YUR_REGION_NAME'])
+            self.DB.set_user_cache(message.from_user.id, {'yurname': message.text})
+            self.bot.send_message(message.chat.id, 'Выберите регион поиска',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.keybord_inline(list(api_request.request_regions(
+                                  ).keys())))
 
-
-
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message.from_user.id) == configuration.STATES['FSSP_ID'])
+        def entering_id_fssp(message):
+            current_user = self.DB.choose_user(message.from_user.id)
+            api_request.request_fssp_id(current_user.cache)
 

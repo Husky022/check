@@ -1,5 +1,7 @@
 import requests
-from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP
+from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP, REQUEST_TAXI
+from settings.messages import car_report_message
+
 
 api_token = API
 
@@ -19,6 +21,7 @@ urls = {
     'chekmodel': REQUEST_PRICE,
     'chekyear': REQUEST_PRICE,
     'fssp': REQUEST_FSSP,
+    'taxi': REQUEST_TAXI,
 }
 
 
@@ -38,12 +41,29 @@ def get_response(type, params):
 def request_gibdd(vin):
     request_params = params
     types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto']
-    report_list = []
+    report_dict = {}
     for item in types:
         request_params.update({'type': item, 'vin': vin})
         report = get_response(item, request_params)
-        report_list.append(report.json())
-    print(report_list)
+        report_dict[item] = report.json()
+    print(report_dict)
+    return car_report_message(model=report_dict['gibdd']['vehicle']['model'],
+                              vin=report_dict['gibdd']['vehicle']['vin'],
+                              date='06/05/22',
+                              body_number=report_dict['gibdd']['vehicle']['bodyNumber'],
+                              color=report_dict['gibdd']['vehicle']['color'],
+                              year=report_dict['gibdd']['vehicle']['year'],
+                              engine_volume=report_dict['gibdd']['vehicle']['engineVolume'],
+                              hp=report_dict['gibdd']['vehicle']['powerHp'],
+                              kWt=report_dict['gibdd']['vehicle']['powerKwt'],
+                              car_type=report_dict['gibdd']['vehicle']['typeinfo'],
+                              passport=report_dict['gibdd']['vehiclePassport']['number'],
+                              owners_list=report_dict['gibdd']['ownershipPeriod'],
+                              restrict_dict=report_dict['restrict'],
+                              dtp_dict=report_dict['dtp'],
+                              wanted_dict=report_dict['wanted'],
+                              eaisto_dict=report_dict['eaisto']
+                              )
 
 
 def request_photo(regnumber):
@@ -102,6 +122,31 @@ def request_fssp_fiz(data):
             'firstname': data['firstname'],
             'lastname': data['lastname'],
             'region': data['region']
+        }
+    )
+    report = get_response('fssp', request_params)
+    return report.json()
+
+
+def request_fssp_yur(data):
+    request_params = params
+    request_params.update(
+        {
+            'type': 'legal',
+            'nameLegal': data['yurname'],
+            'region': data['region']
+        }
+    )
+    report = get_response('fssp', request_params)
+    return report.json()
+
+
+def request_fssp_id(data):
+    request_params = params
+    request_params.update(
+        {
+            'type': 'ip',
+            'number': data['number_ip']
         }
     )
     report = get_response('fssp', request_params)

@@ -1,6 +1,6 @@
 from handlers.handler import Handler
-from settings import configuration
-from settings.messages import MESSAGES
+from settings import configuration, messages
+from settings.configuration import AUTHOR, VERSION
 from services import api_request
 
 
@@ -17,7 +17,7 @@ class HandlerButtons(Handler):
 
 
     def pressed_btn_info(self, message):
-        self.bot.send_message(message.chat.id, MESSAGES['info'],
+        self.bot.send_message(message.chat.id, messages.info_message(VERSION, AUTHOR),
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
 
@@ -57,12 +57,23 @@ class HandlerButtons(Handler):
         self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_FIZ_L_NAME'])
 
     def pressed_btn_yur(self, message):
-        pass
+        self.bot.send_message(message.chat.id, 'Введите название организации',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_YUR_NAME'])
 
     def pressed_btn_id(self, message):
-        pass
+        self.bot.send_message(message.chat.id, 'Номер исполнительного производства в '
+                                               'формате n…n/yy/dd/rr или n…n/yy/ddddd-ИП',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_ID'])
 
     def get_report_fssp_fiz(self, user_id):
+        current_user = self.DB.choose_user(user_id)
+        print(api_request.request_fssp_fiz(current_user.cache))
+
+    def get_report_fssp_yur(self, user_id):
         current_user = self.DB.choose_user(user_id)
         print(api_request.request_fssp_fiz(current_user.cache))
 
@@ -142,3 +153,12 @@ class HandlerButtons(Handler):
                 'region': callback_data.data
             })
             self.get_report_fssp_fiz(callback_data.from_user.id)
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data.from_user.id) == configuration.STATES['FSSP_YUR_REGION_NAME'])
+        def handle_inline(callback_data):
+            self.DB.set_user_cache(callback_data.from_user.id, {
+                'yurname': self.DB.get_user_cache(callback_data.from_user.id)['lastname'],
+                'region': callback_data.data
+            })
+            self.get_report_fssp_yur(callback_data.from_user.id)
