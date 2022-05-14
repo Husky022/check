@@ -15,6 +15,8 @@ def info_message(version, author):
     return message
 
 
+# Рендер отчета по авто
+
 def car_report_message(model, vin, date, body_number, color, year, engine_volume, hp,
                        kWt, car_type, passport, owners_list, restrict_dict, dtp_dict,
                        wanted_dict, eaisto_dict):
@@ -213,3 +215,106 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
 
     print('отчет по авто готов')
     return message
+
+
+# Рендер отчета по штрафам
+
+def fines_message(data):
+    if data['num'] == 0:
+        message = """ 
+
+        <b>Сведения о штрафах отсутствуют </b>
+        
+        """
+        return message
+    else:
+        message = f""" 
+
+        <b>Найдено штрафов - {data['num']}</b>
+        
+        Подробнее:
+        
+        """
+
+        i_fine = 1
+        fines_list = data['rez']
+        while i_fine <= len(fines_list):
+            cur_fine = fines_list[i_fine - 1]
+            message += f"""
+
+                        <i>Номер штрафа - {cur_fine['numfines']}</i>
+
+                        <b>Описание:  </b><i>{cur_fine['KoAPtext']}</i>
+
+                        <b>Статья:  </b><i>{cur_fine['KoAPcode']}</i> 
+
+                        <b>Сумма:  </b><i>{cur_fine['Summa']}</i>   
+
+                        <b>Постановление:  </b><i>{cur_fine['NumGET']}</i>               
+
+                        <b>Дата постановления:  </b><i>{cur_fine['DateGET']}</i>   
+                        
+                        """
+
+            i_fine += 1
+
+        return message
+
+
+# Рендер отчета по фссп
+
+def fssp_message(data):
+    if data['count'] == 0:
+        message = """ 
+
+        <b>Совпадений не найдено</b>
+
+        """
+        return message
+    else:
+        message = f""" 
+
+        <b>Найдено записей - {data['countAll']}</b>
+
+        Подробнее:
+
+        """
+
+        i_deb = 1
+        debtors_list = data['records']
+        message_list = []
+        message_list.append(message)
+        while i_deb <= len(debtors_list):
+            cur_deb = debtors_list[i_deb - 1]
+            message = f"""
+
+                        <i>Номер записи - {i_deb}</i>
+
+                        <b>Должник:  </b><i>{cur_deb['debtor_name']}</i>
+
+                        <b>Н.П.:  </b><i>{cur_deb['debtor_address']}</i> 
+                        
+                        <b>Дата рождения:  </b><i>{cur_deb['debtor_dob']}</i>
+
+                        <b>Номер производства:  </b><i>{cur_deb['process_title']}</i>
+
+                        <b>Исполнительный документ:  </b><i>{cur_deb['recIspDoc']}</i>
+
+                        <b>Тип:  </b><i>{cur_deb['subject']}</i>
+
+                        <b>Орган:  </b><i>{cur_deb['document_organization']}</i>
+
+                        <b>Офицер:  </b><i>{cur_deb['officer_name']}</i>
+
+                        <b>Номера телефонов:  </b><i>{cur_deb['officer_phones']}</i>
+
+
+                        """
+            message_list.append(message)
+            i_deb += 1
+
+
+        return message_list
+
+
+

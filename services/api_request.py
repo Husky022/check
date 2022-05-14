@@ -1,6 +1,6 @@
 import requests
 from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP, REQUEST_TAXI
-from settings.messages import car_report_message
+from settings.messages import car_report_message, fines_message, fssp_message
 
 
 api_token = API
@@ -20,8 +20,7 @@ urls = {
     'price': REQUEST_PRICE,
     'chekmodel': REQUEST_PRICE,
     'chekyear': REQUEST_PRICE,
-    'fssp': REQUEST_FSSP,
-    'taxi': REQUEST_TAXI,
+    'fssp': REQUEST_FSSP
 }
 
 
@@ -77,8 +76,10 @@ def request_fines(regnum, sts):
     request_params = params
     request_params.update({'type': 'fines', 'regNumber': regnum, 'stsNumber': sts})
     report = get_response('fines', request_params)
-    print(report.json())
-    pass
+    report_dict = report.json()
+    print(report_dict)
+    return fines_message(data=report_dict)
+
 
 
 def request_models(marka):
@@ -114,40 +115,17 @@ def request_regions():
     return report.json()['rez']
 
 
-def request_fssp_fiz(data):
+def request_fssp(data):
     request_params = params
     request_params.update(
         {
             'type': 'physical',
             'firstname': data['firstname'],
             'lastname': data['lastname'],
+            'secondname': data['secondname'],
             'region': data['region']
         }
     )
     report = get_response('fssp', request_params)
-    return report.json()
-
-
-def request_fssp_yur(data):
-    request_params = params
-    request_params.update(
-        {
-            'type': 'legal',
-            'nameLegal': data['yurname'],
-            'region': data['region']
-        }
-    )
-    report = get_response('fssp', request_params)
-    return report.json()
-
-
-def request_fssp_id(data):
-    request_params = params
-    request_params.update(
-        {
-            'type': 'ip',
-            'number': data['number_ip']
-        }
-    )
-    report = get_response('fssp', request_params)
-    return report.json()
+    print(report.json())
+    return fssp_message(data=report.json())
