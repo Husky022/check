@@ -39,19 +39,14 @@ class HandlerText(Handler):
             self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
     def get_gibdd_report(self, message):
-        print('1')
         alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
         if not alert:
             msg_to_user = car_report_message(answer)
         else:
             msg_to_user = answer
-        print('4')
         self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
-        print('5')
-
-        print(api_request.request_gibdd(message.text))
 
     def get_fines_report(self, message, regnum):
         self.bot.send_message(message.chat.id, api_request.request_fines(regnum, message.text),
