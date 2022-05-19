@@ -45,24 +45,8 @@ def request_gibdd(vin):
         request_params.update({'type': item, 'vin': vin})
         report = get_response(item, request_params)
         report_dict[item] = report.json()
-    print(report_dict)
-    return car_report_message(model=report_dict['gibdd']['vehicle']['model'],
-                              vin=report_dict['gibdd']['vehicle']['vin'],
-                              date='06/05/22',
-                              body_number=report_dict['gibdd']['vehicle']['bodyNumber'],
-                              color=report_dict['gibdd']['vehicle']['color'],
-                              year=report_dict['gibdd']['vehicle']['year'],
-                              engine_volume=report_dict['gibdd']['vehicle']['engineVolume'],
-                              hp=report_dict['gibdd']['vehicle']['powerHp'],
-                              kWt=report_dict['gibdd']['vehicle']['powerKwt'],
-                              car_type=report_dict['gibdd']['vehicle']['typeinfo'],
-                              passport=report_dict['gibdd']['vehiclePassport']['number'],
-                              owners_list=report_dict['gibdd']['ownershipPeriod'],
-                              restrict_dict=report_dict['restrict'],
-                              dtp_dict=report_dict['dtp'],
-                              wanted_dict=report_dict['wanted'],
-                              eaisto_dict=report_dict['eaisto']
-                              )
+        print('2')
+    return report_dict
 
 
 def request_photo(regnumber):
@@ -78,7 +62,8 @@ def request_fines(regnum, sts):
     report = get_response('fines', request_params)
     report_dict = report.json()
     print(report_dict)
-    return fines_message(data=report_dict)
+    return report_dict
+    # return fines_message(data=report_dict)
 
 
 
@@ -86,14 +71,18 @@ def request_models(marka):
     request_params = params
     request_params.update({'type': 'chekmodel', 'marka': marka})
     report = get_response('chekmodel', request_params)
-    return report.json()['models']
+    report_dict = report.json()
+    return report_dict
+    # return report.json()['models']
 
 
 def request_year(marka, model):
     request_params = params
     request_params.update({'type': 'chekyear', 'marka': marka, 'model': model})
     report = get_response('chekyear', request_params)
-    return report.json()['years']
+    report_dict = report.json()
+    return report_dict
+    # return report.json()['years']
 
 
 def request_price(cache, probeg):
@@ -105,14 +94,17 @@ def request_price(cache, probeg):
                            'probeg': probeg
                            })
     report = get_response('price', request_params)
-    return report.json()
+    report_dict = report.json()
+    return report_dict
 
 
 def request_regions():
     request_params = params
     request_params.update({'type': 'regionsList'})
     report = get_response('fssp', request_params)
-    return report.json()['rez']
+    report_dict = report.json()
+    return report_dict
+    # return report.json()['rez']
 
 
 def request_fssp(data):
@@ -128,4 +120,6 @@ def request_fssp(data):
     )
     report = get_response('fssp', request_params)
     print(report.json())
-    return fssp_message(data=report.json())
+    report_dict = report.json()
+    return report_dict
+    # return fssp_message(data=report.json())

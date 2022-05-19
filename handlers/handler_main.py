@@ -15,5 +15,6 @@ class HandlerMain:
         self.handler_commands.handle()
         self.handler_buttons.handle()
         self.handler_text.handle()
+        print('bot started')
 
 

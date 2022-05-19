@@ -1,7 +1,7 @@
 from handlers.handler import Handler
 from settings import configuration
-from services import api_request, validators
-
+from services import api_request, validators, errors_handlers
+from settings.messages import car_report_message, fines_message, fssp_message
 
 
 class HandlerText(Handler):
@@ -38,18 +38,25 @@ class HandlerText(Handler):
         for el in api_request.request_photo(message.text):
             self.bot.send_message(message.chat.id, el, parse_mode='HTML')
 
-
     def get_gibdd_report(self, message):
-        self.bot.send_message(message.chat.id, api_request.request_gibdd(message.text),
+        print('1')
+        alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
+        if not alert:
+            msg_to_user = car_report_message(answer)
+        else:
+            msg_to_user = answer
+        print('4')
+        self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
+        print('5')
 
+        print(api_request.request_gibdd(message.text))
 
     def get_fines_report(self, message, regnum):
         self.bot.send_message(message.chat.id, api_request.request_fines(regnum, message.text),
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
-
 
     def get_price(self, message, cache, probeg):
         price = api_request.request_price(cache, probeg)
@@ -57,7 +64,6 @@ class HandlerText(Handler):
                               f'Если рассматривать Traid In, то {price["cost_trade_in"]} руб.',
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
-
 
     # работа с фото
 

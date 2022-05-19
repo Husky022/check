@@ -17,23 +17,21 @@ def info_message(version, author):
 
 # Рендер отчета по авто
 
-def car_report_message(model, vin, date, body_number, color, year, engine_volume, hp,
-                       kWt, car_type, passport, owners_list, restrict_dict, dtp_dict,
-                       wanted_dict, eaisto_dict):
+def car_report_message(data):
 
     message_car = f"""
     
-    <b>Отчет об авто {model} {vin} от {date}</b>
+    <b>Отчет об авто {data['model']} {data['vin']} от {data['date']}</b>
     
-    -<b>Модель: - </b><i>{model}</i>
-    -<b>VIN: - </b><i>{vin}</i>
-    -<b>Номер кузова: - </b><i>{body_number}</i>
-    -<b>Цвет: - </b><i>{color}</i>
-    -<b>Год выпуска: - </b><i>{year}</i>
-    -<b>Объем двигателя, см3: - </b><i>{engine_volume}</i>
-    -<b>Мощность л.с./кВт: - </b><i>{hp}/{kWt}</i>
-    -<b>Тип: - </b><i>{car_type}</i>
-    -<b>ПТС: - </b><i>{passport}</i>
+    -<b>Модель: - </b><i>{data['model']}</i>
+    -<b>VIN: - </b><i>{data['vin']}</i>
+    -<b>Номер кузова: - </b><i>{data['body_number']}</i>
+    -<b>Цвет: - </b><i>{data['color']}</i>
+    -<b>Год выпуска: - </b><i>{data['year']}</i>
+    -<b>Объем двигателя, см3: - </b><i>{data['engine_volume']}</i>
+    -<b>Мощность л.с./кВт: - </b><i>{data['hp']}/{data['kWt']}</i>
+    -<b>Тип: - </b><i>{data['car_type']}</i>
+    -<b>ПТС: - </b><i>{data['passport']}</i>
     
     """
     
@@ -41,15 +39,15 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
     
     <b>Сведения о собственниках:</b>  
     
-    <b>Количество собственников: - </b><i>{len(owners_list)}</i>
+    <b>Количество собственников: - </b><i>{len(data['owners_list'])}</i>
     """
 
     i_owner = 1
 
     message_owners_detail = """ """
 
-    while i_owner <= len(owners_list):
-        cur_owner = owners_list[i_owner - 1]
+    while i_owner <= len(data['owners_list']):
+        cur_owner = data['owners_list'][i_owner - 1]
         cur_owner_info = f"""
         
         <i>{i_owner}й собственник - {cur_owner['simplePersonTypeInfo']}</i>
@@ -77,7 +75,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
     <b>Сведения об ограничениях </b>
     """
 
-    if restrict_dict['count'] == 0:
+    if data['restrict_dict']['count'] == 0:
         message_restricks += """
         
         <i>Ограничения отсутсвуют </i>
@@ -85,7 +83,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
         """
     else:
         i_restrict = 1
-        restrict_list = restrict_dict['records']
+        restrict_list = data['restrict_dict']['records']
         while i_restrict <= len(restrict_list):
             cur_restrict = restrict_list[i_restrict - 1]
             cur_restrict_info = f"""
@@ -110,7 +108,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
         <b>Сведения о ДТП </b>
         """
 
-    if dtp_dict['count'] == 0:
+    if data['dtp_dict']['count'] == 0:
         dtp_message += """
 
             <i>Сведения о ДТП отсутствуют </i>
@@ -118,7 +116,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
             """
     else:
         i_dtp = 1
-        dtp_list = dtp_dict['records']
+        dtp_list = data['dtp_dict']['records']
         while i_dtp <= len(dtp_list):
             cur_dtp = dtp_list[i_dtp - 1]
             cur_dtp_info = f"""
@@ -142,7 +140,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
         <b>Сведения о розыске </b>
         """
 
-    if wanted_dict['count'] == 0:
+    if data['wanted_dict']['count'] == 0:
         wanted_message += """
 
             <i>В розыске не найдено </i>
@@ -150,7 +148,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
             """
     else:
         i_wanted = 1
-        wanted_list = wanted_dict['records']
+        wanted_list = data['wanted_dict']['records']
         while i_wanted <= len(wanted_list):
             cur_wanted = wanted_list[i_wanted - 1]
             cur_wanted_info = f"""
@@ -173,7 +171,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
         <b>Сведения о диагностических картах </b>
         """
 
-    if eaisto_dict['count'] == 0:
+    if data['eaisto_dict']['count'] == 0:
         eaisto_message += """
 
             <i>Сведения отсутствуют </i>
@@ -181,7 +179,7 @@ def car_report_message(model, vin, date, body_number, color, year, engine_volume
             """
     else:
         i_eaisto = 1
-        eaisto_list = eaisto_dict['records']
+        eaisto_list = data['eaisto_dict']['records']
         while i_eaisto <= len(eaisto_list):
             cur_eaisto = eaisto_list[i_eaisto - 1]
             eaisto_message += f"""
