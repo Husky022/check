@@ -36,44 +36,49 @@ class DBManager(metaclass=Singleton):
     def commit(self):
         self.session.commit()
 
-    def choose_user(self, user_id):
-        return self.session.query(User).filter_by(user_id=user_id).first()
-
-    def add_new_user(self, user_id, name, username):
-        current_user = self.choose_user(user_id)
+    def choose_user(self, message):
+        current_user = self.session.query(User).filter_by(user_id=message.from_user.id).first()
         if not current_user:
-            new_user = User(user_id, name, username)
-            self.session.add(new_user)
-            self.commit()
-            self.close()
+            self.add_new_user(message.from_user)
+            return self.session.query(User).filter_by(user_id=message.from_user.id).first()
+        return current_user
 
-    def set_user_state(self, user_id, state):
-        current_user = self.choose_user(user_id)
+
+    def add_new_user(self, user):
+        new_user = User(user.id, user.first_name, user.username)
+        self.session.add(new_user)
+        self.commit()
+        self.close()
+
+
+    def set_user_state(self, message, state):
+        current_user = self.choose_user(message)
         current_user.state = state
         self.commit()
         self.close()
 
-    def get_user_state(self, user_id):
-        current_user = self.choose_user(user_id)
+
+    def get_user_state(self, message):
+        current_user = self.choose_user(message)
         state = current_user.state
         self.close()
         return state
 
-    def reset_user_data(self, user_id):
-        current_user = self.choose_user(user_id)
+    def reset_user_data(self, message):
+        current_user = self.choose_user(message)
         current_user.state = '0'
         current_user.cache = {}
         self.commit()
         self.close()
 
-    def set_user_cache(self, user_id, data):
-        current_user = self.choose_user(user_id)
+    def set_user_cache(self, message, data):
+        current_user = self.choose_user(message)
         current_user.cache = data
         self.commit()
         self.close()
 
-    def get_user_cache(self, user_id):
-        current_user = self.choose_user(user_id)
+    def get_user_cache(self, message):
+        current_user = self.choose_user(message)
         cache = current_user.cache
         self.close()
         return cache

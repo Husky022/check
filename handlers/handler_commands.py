@@ -19,4 +19,5 @@ class HandlerCommands(Handler):
                 self.pressed_btn_start(message)
             else:
                 self.bot.send_message(message.chat.id, 'Укажите команду из доступных действий')
-            self.DB.add_new_user(message.from_user.id, message.from_user.first_name, message.from_user.username)
+            self.DB.choose_user(message)
+

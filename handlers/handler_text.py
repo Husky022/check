@@ -64,33 +64,33 @@ class HandlerText(Handler):
 
     def handle(self):
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['PHOTO_SET_REGNUMBER'])
+            message) == configuration.STATES['PHOTO_SET_REGNUMBER'])
         def entering_number_photo(message):
             if validators.reg_numder(message.text):
                 self.get_photos_report(message)
-                self.DB.reset_user_data(message.from_user.id)
+                self.DB.reset_user_data(message)
             else:
                 self.incorrect_input_regnumber(message)
 
         # работа с отчетом по vin
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['GIBDD_SET_VIN'])
+            message) == configuration.STATES['GIBDD_SET_VIN'])
         def entering_vin_gibdd(message):
             if validators.vin(message.text):
                 self.get_gibdd_report(message)
-                self.DB.reset_user_data(message.from_user.id)
+                self.DB.reset_user_data(message)
             else:
                 self.incorrect_input_vin(message)
 
         # работа со штрафами
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['FINES_SET_REGNUMBER'])
+            message) == configuration.STATES['FINES_SET_REGNUMBER'])
         def entering_regnum_fines(message):
             if validators.reg_numder(message.text):
-                self.DB.set_user_state(message.from_user.id, configuration.STATES['FINES_SET_STSNUMBER'])
-                self.DB.set_user_cache(message.from_user.id, {'regnum': message.text})
+                self.DB.set_user_state(message, configuration.STATES['FINES_SET_STSNUMBER'])
+                self.DB.set_user_cache(message, {'regnum': message.text})
                 self.bot.send_message(message.chat.id, 'Теперь введите номер свидетельства ТС',
                                       parse_mode='HTML',
                                       reply_markup=self.keyboards.menu_with_btn_back())
@@ -98,44 +98,44 @@ class HandlerText(Handler):
                 self.incorrect_input_regnumber(message)
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['FINES_SET_STSNUMBER'])
+            message) == configuration.STATES['FINES_SET_STSNUMBER'])
         def entering_sts_fines(message):
             if validators.sts_number(message.text):
-                current_user = self.DB.choose_user(message.from_user.id)
+                current_user = self.DB.choose_user(message)
                 self.get_fines_report(message, current_user.cache['regnum'])
-                self.DB.reset_user_data(message.from_user.id)
+                self.DB.reset_user_data(message)
             else:
                 self.incorrect_input_sts(message)
 
         # работа с оценкой
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['PRICE_SET_PROBEG'])
+            message) == configuration.STATES['PRICE_SET_PROBEG'])
         def entering_probeg_checkprice(message):
             if validators.mileage(message.text):
-                current_user = self.DB.choose_user(message.from_user.id)
+                current_user = self.DB.choose_user(message)
                 self.get_price(message, current_user.cache, message.text)
-                self.DB.reset_user_data(message.from_user.id)
+                self.DB.reset_user_data(message)
             else:
                 self.incorrect_input_mileage(message)
 
         # работа с фссп
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
-            message.from_user.id) == configuration.STATES['FSSP_FIO'])
+            message) == configuration.STATES['FSSP_FIO'])
         def entering_fio_fssp(message):
             if validators.fio(message.text):
-                self.DB.set_user_state(message.from_user.id, configuration.STATES['FSSP_REGION_NAME'])
+                self.DB.set_user_state(message, configuration.STATES['FSSP_REGION_NAME'])
                 user_data = message.text.split()
                 if len(user_data) == 3:
-                    self.DB.set_user_cache(message.from_user.id,
+                    self.DB.set_user_cache(message,
                                            {
                                                'lastname': message.text.split()[0],
                                                'firstname': message.text.split()[1],
                                                'secondname': message.text.split()[2]
                                            })
                 elif len(user_data) == 2:
-                    self.DB.set_user_cache(message.from_user.id,
+                    self.DB.set_user_cache(message,
                                            {
                                                'lastname': message.text.split()[0],
                                                'firstname': message.text.split()[1],
