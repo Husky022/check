@@ -52,13 +52,14 @@ class HandlerButtons(Handler):
         self.DB.set_user_state(message, configuration.STATES['FSSP_FIO'])
 
     def get_report_fssp(self, callback_data):
-        current_user = self.DB.choose_user(callback_data.from_user.id)
+        current_user = self.DB.choose_user(callback_data)
         messages_fssp = api_request.request_fssp(current_user.cache)
-        for item in messages_fssp:
-            self.bot.send_message(callback_data.message.chat.id, item,
-                                  parse_mode='HTML',
-                                  reply_markup=self.keyboards.menu_with_btn_back())
-        self.DB.reset_user_data(message)
+        print(messages_fssp)
+        # for item in messages_fssp:
+        #     self.bot.send_message(callback_data.message.chat.id, item,
+        #                           parse_mode='HTML',
+        #                           reply_markup=self.keyboards.menu_with_btn_back())
+        # self.DB.reset_user_data(message)
 
 
     def handle(self):

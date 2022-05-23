@@ -49,7 +49,12 @@ class HandlerText(Handler):
                               reply_markup=self.keyboards.menu_with_btn_back())
 
     def get_fines_report(self, message, regnum):
-        self.bot.send_message(message.chat.id, api_request.request_fines(regnum, message.text),
+        alert, answer = errors_handlers.fines(api_request.request_fines(regnum, message.text))
+        if not alert:
+            msg_to_user = fines_message(answer)
+        else:
+            msg_to_user = answer
+        self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
 
@@ -105,7 +110,7 @@ class HandlerText(Handler):
                 self.get_fines_report(message, current_user.cache['regnum'])
                 self.DB.reset_user_data(message)
             else:
-                self.incorrect_input_sts(message)
+                self.incorrect_input_stsnumber(message)
 
         # работа с оценкой
 

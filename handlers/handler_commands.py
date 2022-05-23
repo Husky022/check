@@ -21,3 +21,6 @@ class HandlerCommands(Handler):
                 self.bot.send_message(message.chat.id, 'Укажите команду из доступных действий')
             self.DB.choose_user(message)
 
+        @self.bot.message_handler(commands=['how_r_u_bro'])
+        def handle(message):
+            self.bot.send_message(message.chat.id, 'Я в порядке!')
