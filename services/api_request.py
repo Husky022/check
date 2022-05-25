@@ -45,7 +45,6 @@ def request_gibdd(vin):
         request_params.update({'type': item, 'vin': vin})
         report = get_response(item, request_params)
         report_dict[item] = report.json()
-        print('2')
     return report_dict
 
 
@@ -61,9 +60,8 @@ def request_fines(regnum, sts):
     request_params.update({'type': 'fines', 'regNumber': regnum, 'stsNumber': sts})
     report = get_response('fines', request_params)
     report_dict = report.json()
-    print(report_dict)
     return report_dict
-    # return fines_message(data=report_dict)
+
 
 
 
@@ -72,8 +70,7 @@ def request_models(marka):
     request_params.update({'type': 'chekmodel', 'marka': marka})
     report = get_response('chekmodel', request_params)
     report_dict = report.json()
-    return report_dict
-    # return report.json()['models']
+    return report_dict['models']
 
 
 def request_year(marka, model):
@@ -81,8 +78,7 @@ def request_year(marka, model):
     request_params.update({'type': 'chekyear', 'marka': marka, 'model': model})
     report = get_response('chekyear', request_params)
     report_dict = report.json()
-    return report_dict
-    # return report.json()['years']
+    return report_dict['years']
 
 
 def request_price(cache, probeg):
@@ -122,4 +118,3 @@ def request_fssp(data):
     print(report.json())
     report_dict = report.json()
     return report_dict
-    # return fssp_message(data=report.json())
