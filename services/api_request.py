@@ -25,16 +25,8 @@ urls = {
 
 
 def get_response(type, params):
-    if type == 'photo':
-        response = requests.get(urls[type], params=params)
-        records_list = response.json()['records']
-        images_list = []
-        for el in records_list:
-            images_list.append(el['bigPhoto'])
-        return images_list
-    else:
-        response = requests.get(urls[type], params=params)
-        return response
+    return requests.get(urls[type], params=params)
+
 
 
 def request_gibdd(vin):
@@ -51,8 +43,9 @@ def request_gibdd(vin):
 def request_photo(regnumber):
     request_params = params
     request_params.update({'type': 'regnum', 'regNum': regnumber})
-    images_list = get_response('photo', request_params)
-    return images_list
+    report = get_response('photo', request_params)
+    report_dict = report.json()
+    return report_dict
 
 
 def request_fines(regnum, sts):

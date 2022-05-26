@@ -139,7 +139,7 @@ class HandlerText(Handler):
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message) == configuration.STATES['FSSP_FIO'])
         def entering_fio_fssp(message):
-            alert, answer = errors_handlers.fines(api_request.request_regions().keys())
+            alert, answer = errors_handlers.regions(api_request.request_regions())
             if not alert:
                 if validators.fio(message.text):
                     self.DB.set_user_state(message, configuration.STATES['FSSP_REGION_NAME'])
@@ -160,7 +160,7 @@ class HandlerText(Handler):
                                                })
                     self.bot.send_message(message.chat.id, 'Выберите регион поиска',
                                           parse_mode='HTML',
-                                          reply_markup=self.keyboards.keybord_inline(list(regions)))
+                                          reply_markup=self.keyboards.keybord_inline(list(answer)))
                 else:
                     self.incorrect_input_fio(message)
             else:
