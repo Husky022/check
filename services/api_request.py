@@ -70,7 +70,7 @@ def request_models(marka):
     request_params.update({'type': 'chekmodel', 'marka': marka})
     report = get_response('chekmodel', request_params)
     report_dict = report.json()
-    return report_dict['models']
+    return report_dict
 
 
 def request_year(marka, model):
@@ -78,7 +78,7 @@ def request_year(marka, model):
     request_params.update({'type': 'chekyear', 'marka': marka, 'model': model})
     report = get_response('chekyear', request_params)
     report_dict = report.json()
-    return report_dict['years']
+    return report_dict
 
 
 def request_price(cache, probeg):

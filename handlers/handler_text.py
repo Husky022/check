@@ -35,8 +35,14 @@ class HandlerText(Handler):
                               reply_markup=self.keyboards.menu_with_btn_back())
 
     def get_photos_report(self, message):
-        for el in api_request.request_photo(message.text):
-            self.bot.send_message(message.chat.id, el, parse_mode='HTML')
+        alert, answer = errors_handlers.photos(api_request.request_photo(message.text))
+        if not alert:
+            for el in answer:
+                self.bot.send_message(message.chat.id, el, parse_mode='HTML')
+        else:
+            self.bot.send_message(message.chat.id, answer,
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
 
     def get_gibdd_report(self, message):
         alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
@@ -62,7 +68,7 @@ class HandlerText(Handler):
         alert, answer = errors_handlers.car_price(api_request.request_price(cache, probeg))
         if not alert:
             msg_to_user = f"Ориентировочная рыночная стоимость составляет {answer['cost']} руб.\n " \
-                              f"Если рассматривать Traid In, то {answer['cost_trade_in']} руб."
+                          f"Если рассматривать Traid In, то {answer['cost_trade_in']} руб."
         else:
             msg_to_user = answer
         self.bot.send_message(message.chat.id, msg_to_user,

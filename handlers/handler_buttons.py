@@ -53,13 +53,17 @@ class HandlerButtons(Handler):
 
     def get_report_fssp(self, callback_data):
         current_user = self.DB.choose_user(callback_data)
-        messages_fssp = api_request.request_fssp(current_user.cache)
-        print(messages_fssp)
-        for item in messages_fssp:
-            self.bot.send_message(callback_data.message.chat.id, item,
+        alert, answer = errors_handlers.fssp(api_request.request_fssp(current_user.cache))
+        if not alert:
+            for item in answer:
+                self.bot.send_message(callback_data.message.chat.id, item,
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.menu_with_btn_back())
+            self.DB.reset_user_data(message)
+        else:
+            self.bot.send_message(message.chat.id, answer,
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
-        self.DB.reset_user_data(message)
 
 
     def handle(self):
@@ -86,27 +90,39 @@ class HandlerButtons(Handler):
         @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
             callback_data) == configuration.STATES['PRICE_SET_MARKA'])
         def handle_inline(callback_data):
-            self.bot.send_message(callback_data.message.chat.id, 'Теперь выберите модель авто',
-                                  parse_mode='HTML',
-                                  reply_markup=self.keyboards.keybord_inline(api_request.request_models(callback_data.data)))
-            self.DB.set_user_state(callback_data, configuration.STATES['PRICE_SET_MODEL'])
-            self.DB.set_user_cache(callback_data, {'marka': callback_data.data})
+            alert, answer = errors_handlers.models(api_request.request_models(callback_data.data))
+            if not alert:
+                self.bot.send_message(callback_data.message.chat.id, 'Теперь выберите модель авто',
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.keybord_inline(answer))
+                self.DB.set_user_state(callback_data, configuration.STATES['PRICE_SET_MODEL'])
+                self.DB.set_user_cache(callback_data, {'marka': callback_data.data})
+            else:
+                self.bot.send_message(message.chat.id, answer,
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.menu_with_btn_back())
 
         @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
             callback_data) == configuration.STATES['PRICE_SET_MODEL'])
         def handle_inline(callback_data):
-            self.bot.send_message(callback_data.message.chat.id, 'Укажите год авто',
-                                  parse_mode='HTML',
-                                  reply_markup=self.keyboards.keybord_inline(
-                                      api_request.request_year(
-                                          self.DB.get_user_cache(callback_data)['marka'],
-                                          callback_data.data
-                                      )))
-            self.DB.set_user_state(callback_data, configuration.STATES['PRICE_SET_YEAR'])
-            self.DB.set_user_cache(callback_data, {
-                'marka': self.DB.get_user_cache(callback_data)['marka'],
-                'model': callback_data.data
-            })
+            alert, answer = errors_handlers.years(api_request.api_request.request_year(callback_data.data))
+            if not alert:
+                self.bot.send_message(callback_data.message.chat.id, 'Укажите год авто',
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.keybord_inline(
+                                          (
+                                              self.DB.get_user_cache(callback_data)['marka'],
+                                              callback_data.data
+                                          )))
+                self.DB.set_user_state(callback_data, configuration.STATES['PRICE_SET_YEAR'])
+                self.DB.set_user_cache(callback_data, {
+                    'marka': self.DB.get_user_cache(callback_data)['marka'],
+                    'model': callback_data.data
+                })
+            else:
+                self.bot.send_message(message.chat.id, answer,
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.menu_with_btn_back())
 
         @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
             callback_data) == configuration.STATES['PRICE_SET_YEAR'])
