@@ -59,9 +59,13 @@ class HandlerText(Handler):
                               reply_markup=self.keyboards.menu_with_btn_back())
 
     def get_price(self, message, cache, probeg):
-        price = api_request.request_price(cache, probeg)
-        self.bot.send_message(message.chat.id, f'Ориентировочная рыночная стоимость составляет {price["cost"]} руб. ' +
-                              f'Если рассматривать Traid In, то {price["cost_trade_in"]} руб.',
+        alert, answer = errors_handlers.car_price(api_request.request_price(cache, probeg))
+        if not alert:
+            msg_to_user = f"Ориентировочная рыночная стоимость составляет {answer['cost']} руб.\n " \
+                              f"Если рассматривать Traid In, то {answer['cost_trade_in']} руб."
+        else:
+            msg_to_user = answer
+        self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
 
@@ -129,26 +133,31 @@ class HandlerText(Handler):
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message) == configuration.STATES['FSSP_FIO'])
         def entering_fio_fssp(message):
-            if validators.fio(message.text):
-                self.DB.set_user_state(message, configuration.STATES['FSSP_REGION_NAME'])
-                user_data = message.text.split()
-                if len(user_data) == 3:
-                    self.DB.set_user_cache(message,
-                                           {
-                                               'lastname': message.text.split()[0],
-                                               'firstname': message.text.split()[1],
-                                               'secondname': message.text.split()[2]
-                                           })
-                elif len(user_data) == 2:
-                    self.DB.set_user_cache(message,
-                                           {
-                                               'lastname': message.text.split()[0],
-                                               'firstname': message.text.split()[1],
-                                               'secondname': None
-                                           })
-                self.bot.send_message(message.chat.id, 'Выберите регион поиска',
-                                      parse_mode='HTML',
-                                      reply_markup=self.keyboards.keybord_inline(list(api_request.request_regions(
-                                      ).keys())))
+            alert, answer = errors_handlers.fines(api_request.request_regions().keys())
+            if not alert:
+                if validators.fio(message.text):
+                    self.DB.set_user_state(message, configuration.STATES['FSSP_REGION_NAME'])
+                    user_data = message.text.split()
+                    if len(user_data) == 3:
+                        self.DB.set_user_cache(message,
+                                               {
+                                                   'lastname': message.text.split()[0],
+                                                   'firstname': message.text.split()[1],
+                                                   'secondname': message.text.split()[2]
+                                               })
+                    elif len(user_data) == 2:
+                        self.DB.set_user_cache(message,
+                                               {
+                                                   'lastname': message.text.split()[0],
+                                                   'firstname': message.text.split()[1],
+                                                   'secondname': None
+                                               })
+                    self.bot.send_message(message.chat.id, 'Выберите регион поиска',
+                                          parse_mode='HTML',
+                                          reply_markup=self.keyboards.keybord_inline(list(regions)))
+                else:
+                    self.incorrect_input_fio(message)
             else:
-                self.incorrect_input_fio(message)
+                self.bot.send_message(message.chat.id, answer,
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.menu_with_btn_back())

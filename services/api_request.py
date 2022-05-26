@@ -98,9 +98,9 @@ def request_regions():
     request_params = params
     request_params.update({'type': 'regionsList'})
     report = get_response('fssp', request_params)
-    report_dict = report.json()['rez']
+    report_dict = report.json()
     return report_dict
-    # return report.json()['rez']
+
 
 
 def request_fssp(data):
