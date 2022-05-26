@@ -30,7 +30,7 @@ class HandlerText(Handler):
                               reply_markup=self.keyboards.menu_with_btn_back())
 
     def incorrect_input_fio(self, message):
-        self.bot.send_message(message.chat.id, 'Введите корректные данные!. Повторите ввод',
+        self.bot.send_message(message.chat.id, 'Введены некорректные данные. Повторите ввод',
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
 
@@ -43,6 +43,7 @@ class HandlerText(Handler):
             self.bot.send_message(message.chat.id, answer,
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     def get_gibdd_report(self, message):
         alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
@@ -53,6 +54,7 @@ class HandlerText(Handler):
         self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     def get_fines_report(self, message, regnum):
         alert, answer = errors_handlers.fines(api_request.request_fines(regnum, message.text))
@@ -63,6 +65,7 @@ class HandlerText(Handler):
         self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     def get_price(self, message, cache, probeg):
         alert, answer = errors_handlers.car_price(api_request.request_price(cache, probeg))
@@ -74,10 +77,20 @@ class HandlerText(Handler):
         self.bot.send_message(message.chat.id, msg_to_user,
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     # работа с фото
 
     def handle(self):
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message) == configuration.STATES['DEFAULT'])
+        def default_message(message):
+            self.bot.send_message(message.chat.id, 'Выберите в главном меню доступное действие',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.start_menu())
+
+
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message) == configuration.STATES['PHOTO_SET_REGNUMBER'])
         def entering_number_photo(message):

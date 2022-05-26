@@ -19,6 +19,7 @@ class HandlerButtons(Handler):
         self.bot.send_message(message.chat.id, messages.info_message(VERSION, AUTHOR),
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     def pressed_btn_report(self, message):
         self.bot.send_message(message.chat.id, 'Введите VIN автомобиля',
@@ -57,11 +58,11 @@ class HandlerButtons(Handler):
             self.bot.send_message(callback_data.message.chat.id, messages.fssp_message(answer),
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
-            self.DB.reset_user_data(callback_data.message)
         else:
             self.bot.send_message(callback_data.message.chat.id, answer,
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
     def handle(self):
 
