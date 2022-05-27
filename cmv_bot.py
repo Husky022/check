@@ -23,3 +23,5 @@ class CMVBot:
 if __name__ == '__main__':
     bot = CMVBot()
     bot.run()
+
+

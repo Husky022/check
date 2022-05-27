@@ -1,5 +1,8 @@
-venv-home
+venv_home
 venv_office
 settings/configuration.py
 .idea
 settings/cmv.db
+prepare.sh
+run.sh
+cmvbot.service

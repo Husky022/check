@@ -62,7 +62,7 @@ class HandlerButtons(Handler):
             self.bot.send_message(callback_data.message.chat.id, answer,
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
-        self.DB.reset_user_data(message)
+        self.DB.reset_user_data(callback_data.message)
 
     def handle(self):
 
