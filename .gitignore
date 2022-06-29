@@ -6,3 +6,4 @@ settings/cmv.db
 prepare.sh
 run.sh
 cmvbot.service
+services/test.py

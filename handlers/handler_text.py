@@ -34,6 +34,11 @@ class HandlerText(Handler):
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
 
+    def incorrect_input_username(self, message):
+        self.bot.send_message(message.chat.id, 'Пользователь не найден. Повторите ввод',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+
     def get_photos_report(self, message):
         alert, answer = errors_handlers.photos(api_request.request_photo(message.text))
         if not alert:
@@ -86,10 +91,10 @@ class HandlerText(Handler):
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message) == configuration.STATES['DEFAULT'])
         def default_message(message):
+            user = self.DB.choose_user(message)
             self.bot.send_message(message.chat.id, 'Выберите в главном меню доступное действие',
                                   parse_mode='HTML',
-                                  reply_markup=self.keyboards.start_menu())
-
+                                  reply_markup=self.keyboards.start_menu(user))
 
         @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
             message) == configuration.STATES['PHOTO_SET_REGNUMBER'])
@@ -180,3 +185,22 @@ class HandlerText(Handler):
                 self.bot.send_message(message.chat.id, answer,
                                       parse_mode='HTML',
                                       reply_markup=self.keyboards.menu_with_btn_back())
+
+        # добавка подписки пользователю
+
+        @self.bot.message_handler(func=lambda message: self.DB.get_user_state(
+            message) == configuration.STATES['ADD_SUBSCRIBE'])
+        def entering_username(message):
+            current_user = self.DB.choose_user_for_add_subscribe(message.text)
+            if current_user:
+                self.DB.set_user_cache(message,
+                                       {
+                                           'subscribe_for_user': message.text
+                                       })
+                self.DB.set_user_state(message, configuration.STATES['QT_SUBSCRIBES'])
+                self.bot.send_message(message.chat.id, 'Сколько запросов добавить?',
+                                      parse_mode='HTML',
+                                      reply_markup=self.keyboards.keybord_inline([x for x in range(1, 9)]))
+
+            else:
+                self.incorrect_input_username(message)

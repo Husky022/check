@@ -9,12 +9,13 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
+    is_admin = Column(BOOLEAN, default=False)
     username = Column(String)
     name = Column(String)
     user_id = Column(BigInteger)
     state = Column(String, default='0')
     cache = Column(JSONType)
-    subscribe = Column(JSONType)
+    subscribe = Column(Integer, default=0)
 
     def __init__(self, user_id, name, username):
         self.user_id = user_id

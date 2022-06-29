@@ -43,6 +43,22 @@ class DBManager(metaclass=Singleton):
             return self.session.query(User).filter_by(user_id=message.from_user.id).first()
         return current_user
 
+    def choose_user_for_add_subscribe(self, username):
+        current_user = self.session.query(User).filter_by(username=username).first()
+        if not current_user:
+            return False
+        return current_user
+
+    def add_subscribe_for_user(self, username, subscribes):
+        current_user = self.session.query(User).filter_by(username=username).first()
+        current_user.subscribe += subscribes
+        self.commit()
+        self.close()
+
+
+    def get_users_count(self):
+        return self.session.query(User).count()
+
 
     def add_new_user(self, user):
         new_user = User(user.id, user.first_name, user.username)
@@ -50,13 +66,11 @@ class DBManager(metaclass=Singleton):
         self.commit()
         self.close()
 
-
     def set_user_state(self, message, state):
         current_user = self.choose_user(message)
         current_user.state = state
         self.commit()
         self.close()
-
 
     def get_user_state(self, message):
         current_user = self.choose_user(message)
@@ -82,4 +96,3 @@ class DBManager(metaclass=Singleton):
         cache = current_user.cache
         self.close()
         return cache
-

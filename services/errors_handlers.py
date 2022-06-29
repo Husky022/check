@@ -102,3 +102,29 @@ def years(data):
         if data.get('errormsg'):
             message += data.get('errormsg') + '.\n'
         return True, message + 'Попробуйте заново или повторите ввод позже.'
+
+
+def cash(data):
+    if data.get('status') == 200:
+        if data.get('message'):
+            return True, data.get('message')
+        else:
+            return None, data
+    elif data.get('status') != 200 or not data[item].get('status'):
+        message = data.get('message') + '.\n'
+        if data.get('errormsg'):
+            message += data.get('errormsg') + '.\n'
+        return True, message + 'Попробуйте заново или повторите ввод позже.'
+
+
+def operations(data):
+    if data.get('status') == 200:
+        if data.get('message'):
+            return True, data.get('message')
+        else:
+            return None, data
+    elif data.get('status') != 200 or not data[item].get('status'):
+        message = data.get('message') + '.\n'
+        if data.get('errormsg'):
+            message += data.get('errormsg') + '.\n'
+        return True, message + 'Попробуйте заново или повторите ввод позже.'

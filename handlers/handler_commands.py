@@ -7,10 +7,12 @@ class HandlerCommands(Handler):
         super().__init__(bot)
 
     def pressed_btn_start(self, message):
+        user = self.DB.choose_user(message)
         self.bot.send_message(message.chat.id,
                               f'{message.from_user.first_name},'
                               f' приветствую! Что пожелаете?',
-                              reply_markup=self.keyboards.start_menu())
+                              reply_markup=self.keyboards.start_menu(user))
+        print(message.from_user)
 
     def handle(self):
         @self.bot.message_handler(commands=['start'])

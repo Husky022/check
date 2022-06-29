@@ -12,7 +12,7 @@ class Keyboards:
     def set_button(self, name):
         return KeyboardButton(configuration.KEYBOARD[name])
 
-    def start_menu(self):
+    def start_menu(self, user):
         self.markup = ReplyKeyboardMarkup(True, True)
         itm_btn_1 = self.set_button('CAR_REPORT')
         itm_btn_2 = self.set_button('CAR_PHOTO')
@@ -22,7 +22,23 @@ class Keyboards:
         itm_btn_6 = self.set_button('INFO')
         self.markup.row(itm_btn_1, itm_btn_2)
         self.markup.row(itm_btn_3, itm_btn_4)
-        self.markup.row(itm_btn_5, itm_btn_6)
+        if user.is_admin:
+            itm_btn_7 = self.set_button('ADMIN')
+            self.markup.row(itm_btn_5, itm_btn_7, itm_btn_6)
+        else:
+            self.markup.row(itm_btn_5, itm_btn_6)
+        return self.markup
+
+    def admin_menu_with_btn_back(self):
+        self.markup = ReplyKeyboardMarkup(True, True)
+        itm_btn_1 = self.set_button('CASH')
+        itm_btn_2 = self.set_button('OPERATIONS')
+        itm_btn_3 = self.set_button('QT_USERS')
+        itm_btn_4 = self.set_button('ADDSUBSCRIBE')
+        itm_btn_5 = self.set_button('<<')
+        self.markup.row(itm_btn_1, itm_btn_2)
+        self.markup.row(itm_btn_3, itm_btn_4)
+        self.markup.row(itm_btn_5)
         return self.markup
 
     def menu_with_btn_back(self):

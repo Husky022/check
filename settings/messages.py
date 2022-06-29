@@ -181,3 +181,21 @@ def fssp_message(data):
         return message
     except KeyError:
         return 'Проблема на стороне API. Обратитесь к разработчику'
+
+
+def cash_message(data):
+    try:
+        message = f"<b>Текущий баланс - {data['balance']} руб.</b>."
+        return message
+    except KeyError:
+        return 'Проблема на стороне API. Обратитесь к разработчику'
+
+
+def operations_message(data):
+    try:
+        message = f"<b>Количество операций пополнения: </b><i>{data['countPay']}</i>.\n" \
+                  f"<b>Успешных запросов: </b><i>{data['countPaytoApi']}</i>.\n" \
+                  f"<b>Возвраты за неуспешные запросы: </b><i>{data['countBack']}</i>."
+        return message
+    except KeyError:
+        return 'Проблема на стороне API. Обратитесь к разработчику'

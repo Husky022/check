@@ -1,5 +1,6 @@
 import requests
-from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP, REQUEST_TAXI
+from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP, \
+    REQUEST_TAXI, REQUEST_API
 from settings.messages import car_report_message, fines_message, fssp_message
 
 
@@ -20,13 +21,29 @@ urls = {
     'price': REQUEST_PRICE,
     'chekmodel': REQUEST_PRICE,
     'chekyear': REQUEST_PRICE,
-    'fssp': REQUEST_FSSP
+    'fssp': REQUEST_FSSP,
+    'api': REQUEST_API
 }
 
 
 def get_response(type, params):
     return requests.get(urls[type], params=params)
 
+
+def request_cash():
+    request_params = params
+    request_params.update({'type': 'balance'})
+    report = get_response('api', request_params)
+    report_dict = report.json()
+    return report_dict
+
+
+def request_operations():
+    request_params = params
+    request_params.update({'type': 'operations'})
+    report = get_response('api', request_params)
+    report_dict = report.json()
+    return report_dict
 
 
 def request_gibdd(vin):

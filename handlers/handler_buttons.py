@@ -2,7 +2,8 @@ from handlers.handler import Handler
 from settings import configuration, messages
 from settings.configuration import AUTHOR, VERSION
 from services import api_request, errors_handlers
-
+from settings.messages import cash_message, operations_message
+from pprint import pprint
 
 class HandlerButtons(Handler):
 
@@ -10,10 +11,52 @@ class HandlerButtons(Handler):
         super().__init__(bot)
 
     def pressed_btn_back(self, message):
+        user = self.DB.choose_user(message)
         self.bot.send_message(message.chat.id, 'Вы вернулись назад',
                               parse_mode='HTML',
-                              reply_markup=self.keyboards.start_menu())
+                              reply_markup=self.keyboards.start_menu(user))
         self.DB.reset_user_data(message)
+
+    # кнопки админки
+
+    def pressed_btn_admin(self, message):
+        self.bot.send_message(message.chat.id, 'Меню админ-панели',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.admin_menu_with_btn_back())
+
+    def pressed_btn_cash(self, message):
+        alert, answer = errors_handlers.cash(api_request.request_cash())
+        if not alert:
+            msg_to_user = cash_message(answer)
+        else:
+            msg_to_user = answer
+        self.bot.send_message(message.chat.id, msg_to_user,
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+
+    def pressed_btn_operations(self, message):
+        alert, answer = errors_handlers.operations(api_request.request_operations())
+        if not alert:
+            msg_to_user = operations_message(answer)
+        else:
+            msg_to_user = answer
+        self.bot.send_message(message.chat.id, msg_to_user,
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+
+    def pressed_btn_add_subscribe(self, message):
+        self.bot.send_message(message.chat.id, 'Введите ник пользователя',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.set_user_state(message, configuration.STATES['ADD_SUBSCRIBE'])
+
+    def pressed_btn_qt_users(self, message):
+        users_count = self.DB.get_users_count()
+        self.bot.send_message(message.chat.id, f'Всего сейчас {users_count} пользователей',
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_with_btn_back())
+
+    # общие
 
     def pressed_btn_info(self, message):
         self.bot.send_message(message.chat.id, messages.info_message(VERSION, AUTHOR),
@@ -82,6 +125,16 @@ class HandlerButtons(Handler):
                 self.pressed_btn_price(message)
             if message.text == configuration.KEYBOARD['FSSP']:
                 self.pressed_btn_fssp(message)
+            if message.text == configuration.KEYBOARD['ADMIN']:
+                self.pressed_btn_admin(message)
+            if message.text == configuration.KEYBOARD['CASH']:
+                self.pressed_btn_cash(message)
+            if message.text == configuration.KEYBOARD['OPERATIONS']:
+                self.pressed_btn_operations(message)
+            if message.text == configuration.KEYBOARD['ADDSUBSCRIBE']:
+                self.pressed_btn_add_subscribe(message)
+            if message.text == configuration.KEYBOARD['QT_USERS']:
+                self.pressed_btn_qt_users(message)
 
             # работа с оценкой авто
 
@@ -124,7 +177,8 @@ class HandlerButtons(Handler):
             callback_data) == configuration.STATES['PRICE_SET_YEAR'])
         def handle_inline(callback_data):
             self.bot.send_message(callback_data.message.chat.id, 'Укажите пробег авто в км',
-                                  parse_mode='HTML')
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
             self.DB.set_user_state(callback_data, configuration.STATES['PRICE_SET_PROBEG'])
             self.DB.set_user_cache(callback_data, {
                 'marka': self.DB.get_user_cache(callback_data)['marka'],
@@ -144,3 +198,15 @@ class HandlerButtons(Handler):
                 'region': callback_data.data
             })
             self.get_report_fssp(callback_data)
+
+            # работа с добавкой подписки
+
+        @self.bot.callback_query_handler(func=lambda callback_data: self.DB.get_user_state(
+            callback_data) == configuration.STATES['QT_SUBSCRIBES'])
+        def handle_inline(callback_data):
+            cache = self.DB.get_user_cache(callback_data)
+            self.DB.add_subscribe_for_user(cache.get('subscribe_for_user'), int(callback_data.data))
+            self.bot.send_message(callback_data.message.chat.id, f'Добавлено {callback_data.data} подписок пользователю {cache.get("subscribe_for_user")}',
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
+
