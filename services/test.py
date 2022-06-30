@@ -1,78 +1,42 @@
-class Stack:
-    top = None
+class RadiusVector2D:
+    MIN_COORD = -100
+    MAX_COORD = 1024
 
-    def push(self, obj):
-        if not Stack.top:
-            Stack.top = obj
-        else:
-            cur_obj = Stack.top
-            while cur_obj.next:
-                cur_obj = cur_obj.next
-            cur_obj.set_next(obj)
+    def __init__(self, x=0, y=0):
+        self.__x = 0
+        self.__y = 0
+        RadiusVector2D.set_x(self, x)
+        RadiusVector2D.set_y(self, y)
 
-    def pop(self):
-        if not Stack.top:
-            print('Список пуст')
-        else:
-            if not Stack.top.next:
-                Stack.top = None
-            else:
-                cur_obj = Stack.top
-                while cur_obj.next:
-                    if not cur_obj.next.next:
-                        cur_obj.set_next(None)
-                    else:
-                        cur_obj = cur_obj.next
+    def set_x(self, x):
+        if x in range(RadiusVector2D.MIN_COORD, RadiusVector2D.MAX_COORD):
+            self.__x = x
 
-    def get_data(self):
-        data_list = []
-        if not Stack.top:
-            print('Список пуст')
-        else:
-            cur_obj = Stack.top
-            data_list.append(cur_obj.data)
-            while cur_obj.next:
-                cur_obj = cur_obj.next
-                data_list.append(cur_obj.data)
-            print(data_list)
+    def get_x(self):
+        return self.__x
+
+    def set_y(self, y):
+        if y in range(RadiusVector2D.MIN_COORD, RadiusVector2D.MAX_COORD):
+            self.__y = y
+
+    def get_y(self):
+        return self.__y
+
+    @staticmethod
+    def norm2(vector):
+        return vector.get_x() ** 2 + vector.get_y() ** 2
+
+    x = property(get_x, set_x)
+    y = property(get_y, set_y)
 
 
-class StackObj:
-    def __init__(self, data):
-        self.__data = data
-        self.__next = None
 
-    def set_data(self, data):
-        self.__data = data
+v1 = RadiusVector2D()        # радиус-вектор с координатами (0; 0)
+v2 = RadiusVector2D(1)       # радиус-вектор с координатами (1; 0)
+v3 = RadiusVector2D(1, 2)
+r5 = RadiusVector2D(-89, 2000)
 
-    def get_data(self):
-        return self.__data
-
-    def set_next(self, next_obj):
-        if isinstance(next_obj, StackObj) or next_obj is None:
-            self.__next = next_obj
-
-    def get_next(self):
-        return self.__next
-
-    data = property(get_data, set_data)
-    next = property(get_next, set_next)
-
-
-st = Stack()
-st.push(StackObj("obj1"))
-st.push(StackObj("obj2"))
-st.push(StackObj("obj3"))
-st.push(StackObj("obj4"))
-st.push(StackObj("obj5"))
-st.push(StackObj("obj6"))
-
-st.pop()
-st.pop()
-st.pop()
-st.pop()
-st.pop()
-st.pop()
-st.pop()
-
-st.get_data()
+print(v1.x, v1.y)
+print(v2.x, v2.y)
+print(v3.x, v3.y)
+print(r5.x, r5.y)
