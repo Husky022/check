@@ -1,6 +1,6 @@
 import requests
 from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, REQUEST_FSSP, \
-    REQUEST_TAXI, REQUEST_API
+    REQUEST_TAXI, REQUEST_API, REQUEST_RSA, REQUEST_DECODE, REQUEST_NOTARY, REQUEST_COMPANY, REQUEST_TAXI
 from settings.messages import car_report_message, fines_message, fssp_message
 
 
@@ -22,7 +22,13 @@ urls = {
     'chekmodel': REQUEST_PRICE,
     'chekyear': REQUEST_PRICE,
     'fssp': REQUEST_FSSP,
-    'api': REQUEST_API
+    'osago': REQUEST_RSA,
+    'decoder': REQUEST_DECODE,
+    'company': REQUEST_COMPANY,
+    'notary': REQUEST_NOTARY,
+    'fedresurs': REQUEST_NOTARY,
+    'api': REQUEST_API,
+    'taxi': REQUEST_TAXI
 }
 
 
@@ -48,12 +54,22 @@ def request_operations():
 
 def request_gibdd(vin):
     request_params = params
-    types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto']
+    types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto', 'osago', 'notary', 'fedresurs', 'decoder', 'company']
     report_dict = {}
     for item in types:
-        request_params.update({'type': item, 'vin': vin})
+        if item == 'decoder' or item == 'company':
+            request_params.update({'type': 'vin', 'vin': vin})
+        else:
+            request_params.update({'type': item, 'vin': vin})
         report = get_response(item, request_params)
         report_dict[item] = report.json()
+    request_params = params
+    grz = report_dict['osago']['rez'][0]['regnum']
+    request_params.update({'type': 'regnum'})
+    request_params.update({'regnum': grz})
+    report = get_response('taxi', request_params)
+    report_dict['taxi'] = report.json()
+
     return report_dict
 
 

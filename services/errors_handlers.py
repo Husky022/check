@@ -1,6 +1,8 @@
 def gibdd(data):
     for item in data.keys():
         if data[item].get('status') != 200 or not data[item].get('status'):
+            if data[item].get("VIN", None) and data[item].get("WMI", None):
+                return None, data
             message = data[item].get('message') + '.\n'
             if data[item].get('errormsg'):
                 message += data[item].get('errormsg') + '.\n'

@@ -2,6 +2,7 @@ from handlers.handler import Handler
 from settings import configuration
 from services import api_request, validators, errors_handlers
 from settings.messages import car_report_message, fines_message, fssp_message
+from pprint import pprint
 
 
 class HandlerText(Handler):
@@ -53,6 +54,8 @@ class HandlerText(Handler):
     def get_gibdd_report(self, message):
         alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
         if not alert:
+            print(type(answer))
+            pprint(answer)
             msg_to_user = car_report_message(answer)
         else:
             msg_to_user = answer
