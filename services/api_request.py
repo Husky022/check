@@ -3,7 +3,6 @@ from settings.configuration import API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FI
     REQUEST_TAXI, REQUEST_API, REQUEST_RSA, REQUEST_DECODE, REQUEST_NOTARY, REQUEST_COMPANY, REQUEST_TAXI
 from settings.messages import car_report_message, fines_message, fssp_message
 
-
 api_token = API
 
 params = {
@@ -63,13 +62,27 @@ def request_gibdd(vin):
             request_params.update({'type': item, 'vin': vin})
         report = get_response(item, request_params)
         report_dict[item] = report.json()
-    request_params = params
-    grz = report_dict['osago']['rez'][0]['regnum']
-    request_params.update({'type': 'regnum'})
-    request_params.update({'regnum': grz})
-    report = get_response('taxi', request_params)
-    report_dict['taxi'] = report.json()
 
+    grz = report_dict['osago']['rez'][0]['regnum']
+    report = request_taxi(grz)
+    report_dict['taxi'] = report
+    price_params = {'type': 'price',
+                    'marka': report_dict['decoder']['Make']['value'],
+                    'model': report_dict['decoder']['Model']['value'],
+                    'year': report_dict['gibdd']['vehicle']['year'],
+                    'probeg': (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 10000
+                    }
+    probeg = (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 7000
+    report = request_price(price_params, probeg)
+    report_dict['price'] = report
+    return report_dict
+
+
+def request_taxi(regnumber):
+    request_params = params
+    request_params.update({'type': 'regnum', 'regnum': regnumber})
+    report = get_response('taxi', request_params)
+    report_dict = report.json()
     return report_dict
 
 
@@ -87,8 +100,6 @@ def request_fines(regnum, sts):
     report = get_response('fines', request_params)
     report_dict = report.json()
     return report_dict
-
-
 
 
 def request_models(marka):
@@ -126,7 +137,6 @@ def request_regions():
     report = get_response('fssp', request_params)
     report_dict = report.json()
     return report_dict
-
 
 
 def request_fssp(data):
