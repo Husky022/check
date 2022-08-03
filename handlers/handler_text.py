@@ -1,8 +1,9 @@
 from handlers.handler import Handler
 from settings import configuration
-from services import api_request, validators, errors_handlers
+from services import api_request, validators, errors_handlers, pdf_creator
 from settings.messages import car_report_message, fines_message, fssp_message
 from pprint import pprint
+
 
 
 class HandlerText(Handler):
@@ -52,17 +53,28 @@ class HandlerText(Handler):
         self.DB.reset_user_data(message)
 
     def get_gibdd_report(self, message):
-        alert, answer = errors_handlers.gibdd(api_request.request_gibdd(message.text))
-        if not alert:
-            print(type(answer))
-            pprint(answer)
-            msg_to_user = car_report_message(answer)
-        else:
-            msg_to_user = answer
-        self.bot.send_message(message.chat.id, msg_to_user,
+        self.bot.send_message(message.chat.id, "Подождите минутку, готовим информацию",
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
-        self.DB.reset_user_data(message)
+        alert, answer = api_request.request_gibdd(message.text)
+        if alert:
+            msg_to_user = answer['gibdd'].get('message', 'Ошибка в работе сервисе, повторите попытку позже')
+            self.bot.send_message(message.chat.id, msg_to_user,
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
+            self.DB.reset_user_data(message)
+        if not alert:
+            print('set cache')
+            self.DB.set_user_cache(message, answer)
+
+            # msg_to_user = car_report_message(answer)
+            msg_to_user = 'gibdd_test'
+
+            self.bot.send_message(message.chat.id, msg_to_user,
+                                  parse_mode='HTML',
+                                  reply_markup=self.keyboards.menu_with_btn_back())
+            # self.DB.reset_user_data(message)
+            pdf = pdf_creator.CarReport(answer)
 
     def get_fines_report(self, message, regnum):
         alert, answer = errors_handlers.fines(api_request.request_fines(regnum, message.text))
@@ -95,6 +107,7 @@ class HandlerText(Handler):
             message) == configuration.STATES['DEFAULT'])
         def default_message(message):
             user = self.DB.choose_user(message)
+
             self.bot.send_message(message.chat.id, 'Выберите в главном меню доступное действие',
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.start_menu(user))
@@ -115,7 +128,7 @@ class HandlerText(Handler):
         def entering_vin_gibdd(message):
             if validators.vin(message.text):
                 self.get_gibdd_report(message)
-                self.DB.reset_user_data(message)
+                # self.DB.reset_user_data(message)
             else:
                 self.incorrect_input_vin(message)
 

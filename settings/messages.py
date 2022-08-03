@@ -1,3 +1,5 @@
+from emoji import emojize
+
 def info_message(version, author, reports=None):
     message = f"<b>Добро пожаловать к боту Checkita!</b>\n\n" \
               f"Данный бот разработан для получения информации актуальных" \
@@ -21,120 +23,155 @@ def info_message(version, author, reports=None):
 def car_report_message(data):
     try:
         vehicle = data['gibdd']['vehicle']
-        message_car = f"<b>Отчет об авто {vehicle['model']} {vehicle['vin']} </b>\n\n" \
-                      f"<b>Модель:  </b><i>{vehicle['model']}</i>\n" \
-                      f"<b>VIN: </b><i>{vehicle['vin']}</i>\n" \
-                      f"<b>Номер кузова: </b><i>{vehicle['bodyNumber']}</i>\n" \
-                      f"<b>Цвет: </b><i>{vehicle['color']}</i>\n" \
-                      f"<b>Год выпуска: - </b><i>{vehicle['year']}</i>\n" \
-                      f"<b>Объем двигателя, см3: </b><i>{vehicle['engineVolume']}</i>\n" \
-                      f"<b>Мощность л.с./кВт: </b><i>{vehicle['powerHp']}/{vehicle['powerKwt']}</i>\n" \
-                      f"<b>Тип: </b><i>{vehicle['typeinfo']}</i>\n\n"
-
-        owners_list = data['gibdd']['ownershipPeriod']
-        message_owners_general = f"<b>Сведения о собственниках:</b>\n\n" \
-                                 f"<b>Количество собственников: </b><i>{len(owners_list)}</i>\n\n"
-
-        i_owner = 1
-        message_owners_detail = " "
-
-        while i_owner <= len(owners_list):
-            cur_owner = owners_list[i_owner - 1]
-            cur_owner_info = f"<b>{i_owner}й собственник - </b><i>{cur_owner['simplePersonTypeInfo']}</i>\n" \
-                             f"<b>Предшествующая операция: - </b><i>{cur_owner['lastOperationInfo']}</i>\n" \
-                             f"<b>Период владения: - </b><i>{cur_owner['period']}</i>"
-
-            if cur_owner['to'] == 'null':
-                cur_ownership = f"<i>c {cur_owner['from']} по настоящее время</i>\n\n"
-            else:
-                cur_ownership = f"<i>c {cur_owner['from']} по {cur_owner['to']}</i>\n\n"
-
-            message_owners_detail = message_owners_detail + cur_owner_info + cur_ownership
-
-            i_owner += 1
-
-        restricts = data['restrict']
-        message_restricks = f"<b>Сведения об ограничениях: </b>\n\n"
-
-        if restricts['count'] == 0:
-            message_restricks += "<i>Ограничения отсутсвуют </i>\n\n"
+        message_car = f"<b>📋 {vehicle['model']} {vehicle['vin']} </b>\n\n"
+        if data["restrict"]["count"] == 0:
+            message_car += f"✅ Ограничения не найдены\n"
         else:
-            i_restrict = 1
-            restricts_list = restricts['records']
-            while i_restrict <= len(restricts_list):
-                cur_restrict = restricts_list[i_restrict - 1]
-                cur_restrict_info = f"<b>Номер ограничения - {cur_restrict['num']}</b>\n" \
-                                    f"<b>Вид ограничения: </b><i>{cur_restrict['ogrkodinfo']}</i>\n" \
-                                    f"<b>Основание: </b><i>{cur_restrict['osnOgr']}</i>\n" \
-                                    f"<b>Дата наложения ограничения: </b><i>{cur_restrict['dateogr']}</i>\n" \
-                                    f"<b>Дата окончания ограничения: </b><i>{cur_restrict['dateadd']}</i>\n\n"
-
-                message_restricks += cur_restrict_info
-
-                i_restrict += 1
-
-        dtp_message = "<b>Сведения о ДТП: </b>\n\n"
-        dtp = data['dtp']
-
-        if dtp['count'] == 0:
-            dtp_message += "<i>Сведения о ДТП отсутствуют </i>\n\n"
+            message_car += f"❌ Найдены ограничения\n"
+        message_car += f"🚶 Количество владельцев в ПТС: {len(data['gibdd']['ownershipPeriod'])}\n"
+        if data["wanted"]["count"] == 0:
+            message_car += f"✅ Нет сведений о розыске\n"
         else:
-            i_dtp = 1
-            dtp_list = dtp['records']
-            while i_dtp <= len(dtp_list):
-                cur_dtp = dtp_list[i_dtp - 1]
-                cur_dtp_info = f"<b>Номер ДТП - </b>{cur_dtp['num']}\n" \
-                               f"<b>Дата и время ДТП: - </b><i>{cur_dtp['AccidentDateTime']}</i>\n" \
-                               f"<b>Описание ДТП: - </b><i>{cur_dtp['DamageDestription']}</i>\n" \
-                               f"<b>Место ДТП: - </b><i>{cur_dtp['AccidentPlace']}</i>\n\n"
-                dtp_message += cur_dtp_info
-
-                i_dtp += 1
-
-        wanted_message = "<b>Сведения о розыске </b>\n\n"
-        wanted = data['wanted']
-
-        if wanted['count'] == 0:
-            wanted_message += "<i>В розыске не найдено </i>\n\n"
+            message_car += f"❌ Найдены сведения о розыске\n"
+        if data["osago"]["count"] == 0:
+            message_car += f"❌ Полис ОСАГО не найден\n"
         else:
-            i_wanted = 1
-            wanted_list = wanted['records']
-            while i_wanted <= len(wanted_list):
-                cur_wanted = wanted_list[i_wanted - 1]
-                cur_wanted_info = f"<b>Номер розыска - </b><i>{cur_wanted['num']}</i>\n" \
-                                  f"<b>Регион инициатора розыска: - </b><i>{cur_wanted['w_reg_inic']}</i>\n" \
-                                  f"<b>Дата постановки в розыск: - </b><i>{cur_wanted['w_data_pu']}</i>\n\n"
-                wanted_message += cur_wanted_info
-
-                i_wanted += 1
-
-        eaisto_message = "<b>Сведения о диагностических картах </b>\n\n"
-        eaisto = data['eaisto']
-
-        if eaisto['count'] == 0:
-            eaisto_message += "<i>Сведения отсутствуют </i>\n\n"
+            message_car += f"✅ Найден полис ОСАГО\n"
+            message_car += f"✅ Госномер: {data['osago']['rez'][0]['regnum']}\n"
+        if data["notary"]["num"] == 0:
+            message_car += f"✅ Не в залоге\n"
         else:
-            i_eaisto = 1
-            eaisto_list = eaisto['records']
-            while i_eaisto <= len(eaisto_list):
-                cur_eaisto = eaisto_list[i_eaisto - 1]
-                eaisto_message += f"<b>Номер записи - </b><i>{cur_eaisto['num']}</i>\n" \
-                                  f"<b>Дата окончания диагностической карты: - </b><i>{cur_eaisto['dcExpirationDate']}</i>\n" \
-                                  f"<b>Пункт выдачи диагностической карты: - </b><i>{cur_eaisto['pointAddress']}</i>\n" \
-                                  f"<b>Номер диагностической карты: - </b><i>{cur_eaisto['dcNumber']}</i>\n" \
-                                  f"<b>Показания одометра: - </b><i>{cur_eaisto['odometerValue']}</i>\n\n"
+            message_car += f"❌ Найдены сведения о залоге\n"
+        if data["company"]["count"] == 0:
+            message_car += f"✅ Отзывные компании не найдены\n"
+        else:
+            message_car += f"❌ Найдены отзывные компании\n"
+        if data["dtp"]["count"] == 0:
+            message_car += f"✅ ДТП не найдены\n"
+        else:
+            message_car += f"❌ Авто был в ДТП\n"
+        if len(data["taxi"]["records"]) == 0:
+            message_car += f"✅ Нет сведений о работе в такси\n"
+        else:
+            message_car += f"🚕 Авто работал в такси\n"
 
-                for item in cur_eaisto['previousDcs']:
-                    eaisto_message += f"<b>Предыдущее значение одометра: - </b><i>{item['dcNumber']}</i>\n" \
-                                      f"<b>Номер диагностической карты: - </b><i>{item['dcNumber']}</i>\n\n"
 
-                i_eaisto += 1
+        # vehicle = data['gibdd']['vehicle']
+        # message_car = f"<b>Отчет об авто {vehicle['model']} {vehicle['vin']} </b>\n\n" \
+        #               f"<b>Модель:  </b><i>{vehicle['model']}</i>\n" \
+        #               f"<b>VIN: </b><i>{vehicle['vin']}</i>\n" \
+        #               f"<b>Номер кузова: </b><i>{vehicle['bodyNumber']}</i>\n" \
+        #               f"<b>Цвет: </b><i>{vehicle['color']}</i>\n" \
+        #               f"<b>Год выпуска: - </b><i>{vehicle['year']}</i>\n" \
+        #               f"<b>Объем двигателя, см3: </b><i>{vehicle['engineVolume']}</i>\n" \
+        #               f"<b>Мощность л.с./кВт: </b><i>{vehicle['powerHp']}/{vehicle['powerKwt']}</i>\n" \
+        #               f"<b>Тип: </b><i>{vehicle['typeinfo']}</i>\n\n"
+        #
+        # owners_list = data['gibdd']['ownershipPeriod']
+        # message_owners_general = f"<b>Сведения о собственниках:</b>\n\n" \
+        #                          f"<b>Количество собственников: </b><i>{len(owners_list)}</i>\n\n"
+        #
+        # i_owner = 1
+        # message_owners_detail = " "
+        #
+        # while i_owner <= len(owners_list):
+        #     cur_owner = owners_list[i_owner - 1]
+        #     cur_owner_info = f"<b>{i_owner}й собственник - </b><i>{cur_owner['simplePersonTypeInfo']}</i>\n" \
+        #                      f"<b>Предшествующая операция: - </b><i>{cur_owner['lastOperationInfo']}</i>\n" \
+        #                      f"<b>Период владения: - </b><i>{cur_owner['period']}</i>"
+        #
+        #     if cur_owner['to'] == 'null':
+        #         cur_ownership = f"<i>c {cur_owner['from']} по настоящее время</i>\n\n"
+        #     else:
+        #         cur_ownership = f"<i>c {cur_owner['from']} по {cur_owner['to']}</i>\n\n"
+        #
+        #     message_owners_detail = message_owners_detail + cur_owner_info + cur_ownership
+        #
+        #     i_owner += 1
+        #
+        # restricts = data['restrict']
+        # message_restricks = f"<b>Сведения об ограничениях: </b>\n\n"
+        #
+        # if restricts['count'] == 0:
+        #     message_restricks += "<i>Ограничения отсутсвуют </i>\n\n"
+        # else:
+        #     i_restrict = 1
+        #     restricts_list = restricts['records']
+        #     while i_restrict <= len(restricts_list):
+        #         cur_restrict = restricts_list[i_restrict - 1]
+        #         cur_restrict_info = f"<b>Номер ограничения - {cur_restrict['num']}</b>\n" \
+        #                             f"<b>Вид ограничения: </b><i>{cur_restrict['ogrkodinfo']}</i>\n" \
+        #                             f"<b>Основание: </b><i>{cur_restrict['osnOgr']}</i>\n" \
+        #                             f"<b>Дата наложения ограничения: </b><i>{cur_restrict['dateogr']}</i>\n" \
+        #                             f"<b>Дата окончания ограничения: </b><i>{cur_restrict['dateadd']}</i>\n\n"
+        #
+        #         message_restricks += cur_restrict_info
+        #
+        #         i_restrict += 1
+        #
+        # dtp_message = "<b>Сведения о ДТП: </b>\n\n"
+        # dtp = data['dtp']
+        #
+        # if dtp['count'] == 0:
+        #     dtp_message += "<i>Сведения о ДТП отсутствуют </i>\n\n"
+        # else:
+        #     i_dtp = 1
+        #     dtp_list = dtp['records']
+        #     while i_dtp <= len(dtp_list):
+        #         cur_dtp = dtp_list[i_dtp - 1]
+        #         cur_dtp_info = f"<b>Номер ДТП - </b>{cur_dtp['num']}\n" \
+        #                        f"<b>Дата и время ДТП: - </b><i>{cur_dtp['AccidentDateTime']}</i>\n" \
+        #                        f"<b>Описание ДТП: - </b><i>{cur_dtp['DamageDestription']}</i>\n" \
+        #                        f"<b>Место ДТП: - </b><i>{cur_dtp['AccidentPlace']}</i>\n\n"
+        #         dtp_message += cur_dtp_info
+        #
+        #         i_dtp += 1
+        #
+        # wanted_message = "<b>Сведения о розыске </b>\n\n"
+        # wanted = data['wanted']
+        #
+        # if wanted['count'] == 0:
+        #     wanted_message += "<i>В розыске не найдено </i>\n\n"
+        # else:
+        #     i_wanted = 1
+        #     wanted_list = wanted['records']
+        #     while i_wanted <= len(wanted_list):
+        #         cur_wanted = wanted_list[i_wanted - 1]
+        #         cur_wanted_info = f"<b>Номер розыска - </b><i>{cur_wanted['num']}</i>\n" \
+        #                           f"<b>Регион инициатора розыска: - </b><i>{cur_wanted['w_reg_inic']}</i>\n" \
+        #                           f"<b>Дата постановки в розыск: - </b><i>{cur_wanted['w_data_pu']}</i>\n\n"
+        #         wanted_message += cur_wanted_info
+        #
+        #         i_wanted += 1
+        #
+        # eaisto_message = "<b>Сведения о диагностических картах </b>\n\n"
+        # eaisto = data['eaisto']
+        #
+        # if eaisto['count'] == 0:
+        #     eaisto_message += "<i>Сведения отсутствуют </i>\n\n"
+        # else:
+        #     i_eaisto = 1
+        #     eaisto_list = eaisto['records']
+        #     while i_eaisto <= len(eaisto_list):
+        #         cur_eaisto = eaisto_list[i_eaisto - 1]
+        #         eaisto_message += f"<b>Номер записи - </b><i>{cur_eaisto['num']}</i>\n" \
+        #                           f"<b>Дата окончания диагностической карты: - </b><i>{cur_eaisto['dcExpirationDate']}</i>\n" \
+        #                           f"<b>Пункт выдачи диагностической карты: - </b><i>{cur_eaisto['pointAddress']}</i>\n" \
+        #                           f"<b>Номер диагностической карты: - </b><i>{cur_eaisto['dcNumber']}</i>\n" \
+        #                           f"<b>Показания одометра: - </b><i>{cur_eaisto['odometerValue']}</i>\n\n"
+        #
+        #         for item in cur_eaisto['previousDcs']:
+        #             eaisto_message += f"<b>Предыдущее значение одометра: - </b><i>{item['dcNumber']}</i>\n" \
+        #                               f"<b>Номер диагностической карты: - </b><i>{item['dcNumber']}</i>\n\n"
+        #
+        #         i_eaisto += 1
+        #
+        # message = message_car + message_owners_general + message_owners_detail \
+        #           + message_restricks + dtp_message + wanted_message + eaisto_message
+        #
+        # print('отчет по авто готов')
 
-        message = message_car + message_owners_general + message_owners_detail \
-                  + message_restricks + dtp_message + wanted_message + eaisto_message
-
-        print('отчет по авто готов')
-
+        message = message_car
         return message
     except KeyError:
         return 'Проблема на стороне API. Обратитесь к разработчику'

@@ -39,7 +39,7 @@ class DBManager(metaclass=Singleton):
     def choose_user(self, message):
         current_user = self.session.query(User).filter_by(user_id=message.from_user.id).first()
         if not current_user:
-            self.add_new_user(message.from_user)
+            self.add_new_user(message.from_user, message.chat.id)
             return self.session.query(User).filter_by(user_id=message.from_user.id).first()
         return current_user
 
@@ -59,9 +59,8 @@ class DBManager(metaclass=Singleton):
     def get_users_count(self):
         return self.session.query(User).count()
 
-
-    def add_new_user(self, user):
-        new_user = User(user.id, user.first_name, user.username)
+    def add_new_user(self, user, chat_id):
+        new_user = User(user.id, user.first_name, user.username, chat_id)
         self.session.add(new_user)
         self.commit()
         self.close()

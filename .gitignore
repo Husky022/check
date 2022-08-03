@@ -1,5 +1,7 @@
 venv_home
 venv_office
+venv
+venv_asus
 settings/configuration.py
 .idea
 settings/cmv.db

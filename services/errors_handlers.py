@@ -1,3 +1,19 @@
+# def gibdd(data):
+#     for item in data.keys():
+#         if data[item].get('status') != 200 or not data[item].get('status'):
+#             if data[item].get("VIN", None) and data[item].get("WMI", None):
+#                 return None, data
+#             message = data[item].get('message') + '.\n'
+#             if data[item].get('errormsg'):
+#                 message += data[item].get('errormsg') + '.\n'
+#                 return True, message + 'Попробуйте заново или повторите ввод позже.'
+#     if data['gibdd'].get('found') and data['gibdd'].get('vehicle'):
+#         return None, data
+#     if not data['gibdd'].get('vehicle'):
+#         message = data['gibdd'].get('message')
+#         return True, message
+
+
 def gibdd(data):
     for item in data.keys():
         if data[item].get('status') != 200 or not data[item].get('status'):
