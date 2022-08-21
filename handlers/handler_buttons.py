@@ -1,7 +1,7 @@
 from handlers.handler import Handler
 from settings import configuration, messages
 from settings.configuration import AUTHOR, VERSION
-from services import api_request, errors_handlers
+from services import api_request, errors_handlers, pdf_creator
 from settings.messages import cash_message, operations_message
 from pprint import pprint
 
@@ -107,8 +107,18 @@ class HandlerButtons(Handler):
                                   reply_markup=self.keyboards.menu_with_btn_back())
         self.DB.reset_user_data(callback_data.message)
 
-    def handle(self):
+    def send_pdf_car_report(self, message):
+        cache = self.DB.get_user_cache(message)
+        pdf_creator.CarReport(cache)
+        doc = open(f'./reports/{cache["report_id"]}.pdf', 'rb')
+        self.bot.send_document(message.chat.id, doc, reply_markup=self.keyboards.menu_with_btn_back())
+        # self.bot.send_message(message.chat.id, f'Готовится отчет',
+        #                       parse_mode='HTML',
+        #                       reply_markup=self.keyboards.menu_with_btn_back())
+        self.DB.reset_user_data(message)
 
+
+    def handle(self):
         @self.bot.message_handler(func=lambda message: message.text in configuration.KEYBOARD.values())
         def handle(message):
             if message.text == configuration.KEYBOARD['<<']:
@@ -135,6 +145,8 @@ class HandlerButtons(Handler):
                 self.pressed_btn_add_subscribe(message)
             if message.text == configuration.KEYBOARD['QT_USERS']:
                 self.pressed_btn_qt_users(message)
+            if message.text == configuration.KEYBOARD['DOWNLOAD_PDF']:
+                self.send_pdf_car_report(message)
 
             # работа с оценкой авто
 
@@ -209,4 +221,6 @@ class HandlerButtons(Handler):
             self.bot.send_message(callback_data.message.chat.id, f'Добавлено {callback_data.data} подписок пользователю {cache.get("subscribe_for_user")}',
                                   parse_mode='HTML',
                                   reply_markup=self.keyboards.menu_with_btn_back())
+
+
 

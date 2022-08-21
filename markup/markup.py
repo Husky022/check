@@ -47,6 +47,13 @@ class Keyboards:
         self.markup.row(itm_btn_1)
         return self.markup
 
+    def save_report_with_btn_back(self):
+        self.markup = ReplyKeyboardMarkup(True, True)
+        itm_btn_1 = self.set_button('<<')
+        itm_btn_2 = self.set_button('DOWNLOAD_PDF')
+        self.markup.row(itm_btn_1, itm_btn_2)
+        return self.markup
+
     def menu_fssp(self):
         self.markup = ReplyKeyboardMarkup(True, True)
         itm_btn_1 = self.set_button('FIZ')

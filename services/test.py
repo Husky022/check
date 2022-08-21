@@ -1,8 +1,19 @@
-from transliterate import translit
+# from transliterate import translit
+#
+# text = 'УS3ЕD49Е863501038'
+#
+# ru_text = translit(text, 'ru', reversed=True)
+#
+# print(ru_text)
 
-text = 'O022EO750'
+# model = 'MERCEDES BENZ А45 АМG 4МАТIС'
+#
+# model = model.replace('БЕЗ МОДЕЛИ ', '')
+#
+# print(model)
 
-ru_text = translit(text, 'ru')
+text = 'Wdd1760521j279894'
 
-print(ru_text)
+text = text.upper()
 
+print(text)

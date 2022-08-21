@@ -2,6 +2,8 @@ from datetime import date, timedelta
 from pprint import pprint
 from transliterate import translit
 
+import copy
+
 import requests
 from settings.configuration import API, TAXI_API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, \
                                               REQUEST_FSSP, \
@@ -41,7 +43,7 @@ def get_response(type, params):
 
 
 def request_cash():
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'balance'})
     report = get_response('api', request_params)
     report_dict = report.json()
@@ -49,7 +51,7 @@ def request_cash():
 
 
 def request_operations():
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'operations'})
     report = get_response('api', request_params)
     report_dict = report.json()
@@ -57,10 +59,10 @@ def request_operations():
 
 
 def request_gibdd(vin):
-    request_params = params
-    # types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto', 'notary', 'fedresurs', 'decoder', 'company']
-    types = ['gibdd']
-    report_dict = {}
+    request_params = copy.deepcopy(params)
+    types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto', 'notary', 'fedresurs', 'decoder', 'company']
+    vin = vin.upper()
+    report_dict = {'report_id': vin}
     for item in types:
         if item == 'gibdd':
             print('1')
@@ -76,50 +78,62 @@ def request_gibdd(vin):
                 return True, report_dict
             print('6')
             continue
-        # if item == 'decoder' or item == 'company':
-        #     request_params.update({'type': 'vin', 'vin': vin})
-        # else:
-        #     request_params.update({'type': item, 'vin': vin})
-        # report = get_response(item, request_params)
-        # report_dict[item] = report.json()
+        if item == 'decoder' or item == 'company':
+            request_params.update({'type': 'vin', 'vin': vin})
+        else:
+            request_params.update({'type': item, 'vin': vin})
+        report = get_response(item, request_params)
+        report_dict[item] = report.json()
 
-    # price_params = {'type': 'price',
-    #                 'marka': report_dict['decoder']['Make']['value'],
-    #                 'model': report_dict['decoder']['Model']['value'],
-    #                 'year': report_dict['gibdd']['vehicle']['year'],
-    #                 'probeg': (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 10000
-    #                 }
-    # probeg = (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 7000
-    # report = request_price(price_params, probeg)
-    # report_dict['price'] = report
-    # taxi_dict = {'records': []}
-    # periods = report_dict['gibdd']['ownershipPeriod']
-    # for owner_period in periods:
-    #     av_period = average_period_time(owner_period['from'], owner_period['to'])
-    #     osago_params = params
-    #     osago_params.update({
-    #                         'type': 'osago',
-    #                         'vin': report_dict['gibdd']['vehicle']['vin'],
-    #                         'date': av_period
-    #                         })
-    #     osago_report = get_response('osago', osago_params).json()
-    #     # pprint(osago_params)
-    #     pprint(osago_report)
-    #     if report_dict['gibdd']['ownershipPeriod'].index(owner_period) == len(periods) - 1:
-    #         report_dict['osago'] = osago_report
-    #     if osago_report.get('rez', None):
-    #         grz = osago_report['rez'][0]['regnum']
-    #         if grz.endswith('RUS'):
-    #             grz = grz[:-3]
-    #         grz = translit(grz, 'ru')
-    #         report_taxi = request_taxi(grz)
-    #         pprint(report_taxi)
-    #         if report_taxi.get('records'):
-    #             if len(report_taxi.get('records')) > 0:
-    #                 for item in report_taxi.get('records'):
-    #                     taxi_dict['records'].append(item)
-    # report_dict['taxi'] = taxi_dict
-    pprint(report_dict)
+    price_params = {'type': 'price',
+                    'marka': report_dict['decoder']['Make']['value'],
+                    'model': report_dict['decoder']['Model']['value'],
+                    'year': report_dict['gibdd']['vehicle']['year'],
+                    'probeg': (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 10000
+                    }
+    probeg = (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 7000
+    report = request_price(price_params, probeg)
+    report_dict['price'] = report
+    taxi_dict = {'records': []}
+    periods = report_dict['gibdd']['ownershipPeriod']
+    for owner_period in periods:
+        osago_params = copy.deepcopy(params)
+        print('---')
+        pprint(osago_params)
+        print('---')
+        osago_params.update({
+            'type': 'osago',
+            'vin': vin
+        })
+        print(f"index - {report_dict['gibdd']['ownershipPeriod'].index(owner_period)}")
+        if report_dict['gibdd']['ownershipPeriod'].index(owner_period) == len(periods) - 1:
+            print('last')
+            print('----------')
+            pprint(owner_period)
+            print('----------')
+            osago_report = get_response('osago', osago_params).json()
+            pprint(osago_params)
+            print('----------')
+            report_dict['osago'] = osago_report
+        else:
+            print('not last')
+            av_period = average_period_time(owner_period['from'], owner_period['to'])
+            osago_params.update({'date': av_period})
+            osago_report = get_response('osago', osago_params).json()
+
+        if osago_report.get('rez', None):
+            grz = osago_report['rez'][0]['regnum']
+            if grz.endswith('RUS'):
+                grz = grz[:-3]
+            grz = translit(grz, 'ru')
+            report_taxi = request_taxi(grz)
+            # pprint(report_taxi)
+            if report_taxi.get('records'):
+                if len(report_taxi.get('records')) > 0:
+                    for item in report_taxi.get('records'):
+                        taxi_dict['records'].append(item)
+    report_dict['taxi'] = taxi_dict
+    # pprint(report_dict)
     return None, report_dict
 
 
@@ -133,15 +147,16 @@ def request_taxi(regnumber):
 
 
 def request_photo(regnumber):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'regnum', 'regNum': regnumber})
     report = get_response('photo', request_params)
     report_dict = report.json()
+    pprint(report_dict)
     return report_dict
 
 
 def request_fines(regnum, sts):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'fines', 'regNumber': regnum, 'stsNumber': sts})
     report = get_response('fines', request_params)
     report_dict = report.json()
@@ -149,7 +164,7 @@ def request_fines(regnum, sts):
 
 
 def request_models(marka):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'chekmodel', 'marka': marka})
     report = get_response('chekmodel', request_params)
     report_dict = report.json()
@@ -157,7 +172,7 @@ def request_models(marka):
 
 
 def request_year(marka, model):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'chekyear', 'marka': marka, 'model': model})
     report = get_response('chekyear', request_params)
     report_dict = report.json()
@@ -165,7 +180,7 @@ def request_year(marka, model):
 
 
 def request_price(cache, probeg):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'price',
                            'marka': cache['marka'],
                            'model': cache['model'],
@@ -178,7 +193,7 @@ def request_price(cache, probeg):
 
 
 def request_regions():
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update({'type': 'regionsList'})
     report = get_response('fssp', request_params)
     report_dict = report.json()
@@ -186,7 +201,7 @@ def request_regions():
 
 
 def request_fssp(data):
-    request_params = params
+    request_params = copy.deepcopy(params)
     request_params.update(
         {
             'type': 'physical',
