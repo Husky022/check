@@ -11,3 +11,4 @@ six==1.16.0
 SQLAlchemy==1.4.35
 SQLAlchemy-Utils==0.38.2
 urllib3==1.26.9
+transliterate==1.10.2

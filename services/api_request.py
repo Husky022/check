@@ -65,18 +65,12 @@ def request_gibdd(vin):
     report_dict = {'report_id': vin}
     for item in types:
         if item == 'gibdd':
-            print('1')
             request_params.update({'type': item, 'vin': vin})
             report = get_response(item, request_params)
-            print('2')
             report_json = report.json()
-            print('3')
             report_dict[item] = report_json
-            print('4')
             if report_json.get('message', None):
-                print('5')
                 return True, report_dict
-            print('6')
             continue
         if item == 'decoder' or item == 'company':
             request_params.update({'type': 'vin', 'vin': vin})
@@ -98,25 +92,15 @@ def request_gibdd(vin):
     periods = report_dict['gibdd']['ownershipPeriod']
     for owner_period in periods:
         osago_params = copy.deepcopy(params)
-        print('---')
         pprint(osago_params)
-        print('---')
         osago_params.update({
             'type': 'osago',
             'vin': vin
         })
-        print(f"index - {report_dict['gibdd']['ownershipPeriod'].index(owner_period)}")
         if report_dict['gibdd']['ownershipPeriod'].index(owner_period) == len(periods) - 1:
-            print('last')
-            print('----------')
-            pprint(owner_period)
-            print('----------')
             osago_report = get_response('osago', osago_params).json()
-            pprint(osago_params)
-            print('----------')
             report_dict['osago'] = osago_report
         else:
-            print('not last')
             av_period = average_period_time(owner_period['from'], owner_period['to'])
             osago_params.update({'date': av_period})
             osago_report = get_response('osago', osago_params).json()
@@ -127,13 +111,11 @@ def request_gibdd(vin):
                 grz = grz[:-3]
             grz = translit(grz, 'ru')
             report_taxi = request_taxi(grz)
-            # pprint(report_taxi)
             if report_taxi.get('records'):
                 if len(report_taxi.get('records')) > 0:
                     for item in report_taxi.get('records'):
                         taxi_dict['records'].append(item)
     report_dict['taxi'] = taxi_dict
-    # pprint(report_dict)
     return None, report_dict
 
 
@@ -151,8 +133,20 @@ def request_photo(regnumber):
     request_params.update({'type': 'regnum', 'regNum': regnumber})
     report = get_response('photo', request_params)
     report_dict = report.json()
-    pprint(report_dict)
-    return report_dict
+    if report_dict.get('status') == 200:
+        if report_dict.get('count') == 0 and report_dict.get('message'):
+            return True, report_dict.get('message')
+        else:
+            records_list = report_dict['records']
+            images_list = []
+            for el in records_list:
+                images_list.append(el['bigPhoto'])
+            return None, images_list
+    elif report_dict.get('status') != 200 or not report_dict[item].get('status'):
+        message = report_dict.get('message') + '.\n'
+        if report_dict.get('errormsg'):
+            message += report_dict.get('errormsg') + '.\n'
+        return True, message + 'Попробуйте заново или повторите ввод позже.'
 
 
 def request_fines(regnum, sts):
@@ -160,7 +154,16 @@ def request_fines(regnum, sts):
     request_params.update({'type': 'fines', 'regNumber': regnum, 'stsNumber': sts})
     report = get_response('fines', request_params)
     report_dict = report.json()
-    return report_dict
+    if report_dict.get('status') == 200:
+        if report_dict.get('num') == 0:
+            return True, report_dict.get('message')
+        elif report_dict.get('num') > 0:
+            return None, report_dict
+    elif report_dict.get('status') != 200 or not report_dict[item].get('status'):
+        message = report_dict.get('message') + '.\n'
+        if report_dict.get('errormsg'):
+            message += report_dict.get('errormsg') + '.\n'
+        return True, message + 'Попробуйте заново или повторите ввод позже.'
 
 
 def request_models(marka):

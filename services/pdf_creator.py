@@ -13,7 +13,6 @@ class CarReport(FPDF, HTMLMixin):
         self.create_report()
 
     def create_report(self):
-
         self.header_block()
         self.general_info()
         self.summary_brief()
@@ -464,5 +463,30 @@ class CarReport(FPDF, HTMLMixin):
             self.ln(10)
 
 
+class FinesReport(FPDF, HTMLMixin):
+
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+        self.create_report()
+
+    def create_report(self):
+        self.header_block()
+        self.general_info()
+        self.summary_brief()
+        self.price_block()
+        self.owners_block()
+        self.restrictions_block()
+        self.wanted()
+        self.dtp_block()
+        self.notary()
+        self.companies()
+        self.osago()
+        self.eaisto()
+        self.taxi()
+        # self.decoder()
+        # output_document_name = f"./reports/{self.data['report_id']}.pdf"
+        # self.output(output_document_name)
+        # return output_document_name
 
 # pdf = CarReport()
