@@ -1,16 +1,24 @@
-from datetime import date, timedelta
+from handlers.handler import Handler
+import datetime
 from pprint import pprint
 from transliterate import translit
+import time
 
 import copy
 
 import requests
 from settings.configuration import API, TAXI_API, REQUEST_GIBDD, REQUEST_PHOTO, REQUEST_FINES, REQUEST_PRICE, \
-                                              REQUEST_FSSP, \
-    REQUEST_TAXI, REQUEST_API, REQUEST_RSA, REQUEST_DECODE, REQUEST_NOTARY, REQUEST_COMPANY, REQUEST_TAXI
-from settings.messages import car_report_message, fines_message, fssp_message
+                                              REQUEST_FSSP, REQUEST_TAXI, REQUEST_API, REQUEST_RSA, REQUEST_DECODE,\
+                                              REQUEST_NOTARY, REQUEST_COMPANY, REQUEST_TAXI, REQUEST_SPECTRUM, \
+                                              generate_spcr_token
+from settings.messages import car_report_message_spcr, fines_message, fssp_message
+
+from pprint import pprint
 
 api_token = API
+
+url_spectrum = REQUEST_SPECTRUM
+
 
 params = {
     'token': API
@@ -58,65 +66,109 @@ def request_operations():
     return report_dict
 
 
-def request_gibdd(vin):
-    request_params = copy.deepcopy(params)
-    types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto', 'notary', 'fedresurs', 'decoder', 'company']
-    vin = vin.upper()
-    report_dict = {'report_id': vin}
-    for item in types:
-        if item == 'gibdd':
-            request_params.update({'type': item, 'vin': vin})
-            report = get_response(item, request_params)
-            report_json = report.json()
-            report_dict[item] = report_json
-            if report_json.get('message', None):
-                return True, report_dict
-            continue
-        if item == 'decoder' or item == 'company':
-            request_params.update({'type': 'vin', 'vin': vin})
-        else:
-            request_params.update({'type': item, 'vin': vin})
-        report = get_response(item, request_params)
-        report_dict[item] = report.json()
+# def request_gibdd(vin):
+#     request_params = copy.deepcopy(params)
+#     types = ['gibdd', 'restrict', 'wanted', 'dtp', 'eaisto', 'notary', 'fedresurs', 'decoder', 'company']
+#     vin = vin.upper()
+#     report_dict = {'report_id': vin}
+#     for item in types:
+#         if item == 'gibdd':
+#             request_params.update({'type': item, 'vin': vin})
+#             report = get_response(item, request_params)
+#             report_json = report.json()
+#             report_dict[item] = report_json
+#             if report_json.get('message', None):
+#                 return True, report_dict
+#             continue
+#         if item == 'decoder' or item == 'company':
+#             request_params.update({'type': 'vin', 'vin': vin})
+#         else:
+#             request_params.update({'type': item, 'vin': vin})
+#         report = get_response(item, request_params)
+#         report_dict[item] = report.json()
+#
+#     price_params = {'type': 'price',
+#                     'marka': report_dict['decoder']['Make']['value'],
+#                     'model': report_dict['decoder']['Model']['value'],
+#                     'year': report_dict['gibdd']['vehicle']['year'],
+#                     'probeg': (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 10000
+#                     }
+#     probeg = (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 7000
+#     report = request_price(price_params, probeg)
+#     report_dict['price'] = report
+#     taxi_dict = {'records': []}
+#     periods = report_dict['gibdd']['ownershipPeriod']
+#     for owner_period in periods:
+#         osago_params = copy.deepcopy(params)
+#         pprint(osago_params)
+#         osago_params.update({
+#             'type': 'osago',
+#             'vin': vin
+#         })
+#         if report_dict['gibdd']['ownershipPeriod'].index(owner_period) == len(periods) - 1:
+#             osago_report = get_response('osago', osago_params).json()
+#             report_dict['osago'] = osago_report
+#         else:
+#             av_period = average_period_time(owner_period['from'], owner_period['to'])
+#             osago_params.update({'datetime.date': av_period})
+#             osago_report = get_response('osago', osago_params).json()
+#
+#         if osago_report.get('rez', None):
+#             grz = osago_report['rez'][0]['regnum']
+#             if grz.endswith('RUS'):
+#                 grz = grz[:-3]
+#             grz = translit(grz, 'ru')
+#             report_taxi = request_taxi(grz)
+#             if report_taxi.get('records'):
+#                 if len(report_taxi.get('records')) > 0:
+#                     for item in report_taxi.get('records'):
+#                         taxi_dict['records'].append(item)
+#     report_dict['taxi'] = taxi_dict
+#     return None, report_dict
 
-    price_params = {'type': 'price',
-                    'marka': report_dict['decoder']['Make']['value'],
-                    'model': report_dict['decoder']['Model']['value'],
-                    'year': report_dict['gibdd']['vehicle']['year'],
-                    'probeg': (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 10000
-                    }
-    probeg = (2022 - int(report_dict['gibdd']['vehicle']['year'])) * 7000
-    report = request_price(price_params, probeg)
-    report_dict['price'] = report
-    taxi_dict = {'records': []}
-    periods = report_dict['gibdd']['ownershipPeriod']
-    for owner_period in periods:
-        osago_params = copy.deepcopy(params)
-        pprint(osago_params)
-        osago_params.update({
-            'type': 'osago',
-            'vin': vin
-        })
-        if report_dict['gibdd']['ownershipPeriod'].index(owner_period) == len(periods) - 1:
-            osago_report = get_response('osago', osago_params).json()
-            report_dict['osago'] = osago_report
-        else:
-            av_period = average_period_time(owner_period['from'], owner_period['to'])
-            osago_params.update({'date': av_period})
-            osago_report = get_response('osago', osago_params).json()
 
-        if osago_report.get('rez', None):
-            grz = osago_report['rez'][0]['regnum']
-            if grz.endswith('RUS'):
-                grz = grz[:-3]
-            grz = translit(grz, 'ru')
-            report_taxi = request_taxi(grz)
-            if report_taxi.get('records'):
-                if len(report_taxi.get('records')) > 0:
-                    for item in report_taxi.get('records'):
-                        taxi_dict['records'].append(item)
-    report_dict['taxi'] = taxi_dict
-    return None, report_dict
+def request_gibdd_make(string):
+    spcr_token = generate_spcr_token()
+    if len(string) == 17:
+        params_to_make = {
+            "queryType": "VIN",
+            "query": string
+        }
+    else:
+        params_to_make = {
+            "queryType": "GRZ",
+            "query": string
+        }
+    url_to_make = url_spectrum + 'user/reports/report_check_vehicle@iqworks/_make'
+    resp = requests.get(url_to_make,
+                        headers={'Accept': 'application/json',
+                                 'Authorization': 'AR-REST ' + spcr_token},
+                        params=params_to_make)
+    return resp
+
+
+def request_gibdd_get(data):
+    url_to_get = url_spectrum + 'user/reports/' + data.json()['data'][0]['uid']
+    params_to_get = {
+        "_content": "true"
+    }
+    spcr_token = generate_spcr_token()
+    resp = requests.get(url_to_get,
+                        headers={'Accept': 'application/json',
+                                 'Authorization': 'AR-REST ' + spcr_token},
+                        params=params_to_get)
+    return resp
+
+
+def request_gibdd_update(data):
+    while data.json()['data'][0]['progress_wait'] != 0:
+        time.sleep(2)
+        print('Накинули 2 секунды')
+        data = requests.get(url_to_get,
+                            headers={'Accept': 'application/json',
+                                     'Authorization': 'AR-REST ' + spcr_token},
+                            params=params_to_get)
+    return data.json()
 
 
 def request_taxi(regnumber):
@@ -223,14 +275,16 @@ def request_fssp(data):
 
 def average_period_time(date_from, date_to):
     if date_to == 'null':
-        date_to = str(date.today())
+        date_to = str(datetime.date.today())
         date_to_list = date_to.split('-')
-        d2 = date(int(date_to_list[0]), int(date_to_list[1]), int(date_to_list[2]))
+        d2 = datetime.date(int(date_to_list[0]), int(date_to_list[1]), int(date_to_list[2]))
     else:
         date_to_list = date_to.split('.')
-        d2 = date(int(date_to_list[2]), int(date_to_list[1]), int(date_to_list[0]))
+        d2 = datetime.date(int(date_to_list[2]), int(date_to_list[1]), int(date_to_list[0]))
     date_from_list = date_from.split('.')
-    d1 = date(int(date_from_list[2]), int(date_from_list[1]), int(date_from_list[0]))
+    d1 = datetime.date(int(date_from_list[2]), int(date_from_list[1]), int(date_from_list[0]))
     current = (str((d2 - d1) / 2 + d1)).split('-')
     current_str = f'{current[2]}.{current[1]}.{current[0]}'
     return current_str
+
+

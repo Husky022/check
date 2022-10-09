@@ -79,8 +79,8 @@ def request_insurance_payments(token, report_type):
 def request_make_report(token, report_type):
     url_current = url_spectrum + 'user/reports/' + report_type + '@iqworks/_make'
     params = {
-        "queryType": "VIN",
-        "query": "XWFSK6E01D0001510"
+        "queryType": "GRZ",
+        "query": "С106МТ797"
     }
     resp = requests.get(url_current,
                         headers={'Accept': 'application/json',
@@ -90,7 +90,7 @@ def request_make_report(token, report_type):
 
 
 def request_get_report(token, report_uid):
-    url_current = url_spectrum + 'user/reports/report_check_vehicle_XWFSK6E01D0001510@iqworks'
+    url_current = url_spectrum + 'user/reports/report_check_vehicle_eyJ0eXBlIjoiR1JaIiwiYm9keSI6ItChMTA20JzQojc5NyIsInNjaGVtYV92ZXJzaW9uIjoiMS4wIiwic3RvcmFnZXMiOnt9fQ==@iqworks'
     params = {
         "_content": "true"
     }
@@ -105,14 +105,13 @@ if __name__ == '__main__':
 
     api_token = generate_token(
         user='admin_integration@iqworks',
-        password='L5EiMP84',
-        age=30
+        password='L5EiMP84'
     )
     print(api_token)
 
-    pprint(request_validation_token(api_token))
+    # pprint(request_validation_token(api_token))
     # pprint(request_make_report(api_token, 'report_check_vehicle'))
-    # pprint(request_get_report(api_token, 'report_check_vehicle_test'))
+    pprint(request_get_report(api_token, 'report_check_vehicle'))
     # pprint(request_balance(api_token, 'report_check_vehicle'))
 
 

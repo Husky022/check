@@ -28,3 +28,19 @@ class User(Base):
         return f"{self.user_id} - {self.name}/{self.username}"
 
 
+class Cache(Base):
+    __tablename__ = 'cache'
+
+    id = Column(Integer, primary_key=True)
+    vin = Column(String)
+    uid = Column(String)
+    update = Column(BigInteger)
+
+
+    def __init__(self, vin, uid, update):
+        self.vin = vin
+        self.uid = uid
+        self.update = update
+
+    def __str__(self):
+        return f"{self.vin} - {self.update}"

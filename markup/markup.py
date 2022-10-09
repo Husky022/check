@@ -68,3 +68,13 @@ class Keyboards:
         self.markup = Keyboa(items=current_list, copy_text_to_callback=True,
                              items_in_row=4).keyboard
         return self.markup
+
+    def menu_variants_reports(self):
+        self.markup = ReplyKeyboardMarkup(True, True)
+        itm_btn_1 = self.set_button('REPORT_LIGHT_VARIANT')
+        itm_btn_2 = self.set_button('REPORT_PRO_VARIANT')
+        itm_btn_3 = self.set_button('<<')
+        self.markup.row(itm_btn_1, itm_btn_2)
+        self.markup.row(itm_btn_3)
+        return self.markup
+

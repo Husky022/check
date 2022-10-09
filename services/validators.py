@@ -2,7 +2,7 @@ import re
 
 
 def reg_numder(string):
-    return True if re.fullmatch(r'[аАвВеЕкКмМнНоОрРсСтТуУхХ]\d{3}[аАвВеЕкКмМнНоОрРсСтТуУхХ]{2}[17]?\d{2}',
+    return True if re.fullmatch(r'[аАвВеЕкКмМнНоОрРсСтТуУхХ]\d{3}[аАвВеЕкКмМнНоОрРсСтТуУхХ]{2}[017]?\d{1,2}',
                                 string) else False
 
 

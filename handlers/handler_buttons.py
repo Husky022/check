@@ -65,10 +65,16 @@ class HandlerButtons(Handler):
         self.DB.reset_user_data(message)
 
     def pressed_btn_report(self, message):
-        self.bot.send_message(message.chat.id, 'Введите VIN автомобиля',
+        self.bot.send_message(message.chat.id, messages.variants_message(),
+                              parse_mode='HTML',
+                              reply_markup=self.keyboards.menu_variants_reports())
+        self.DB.set_user_state(message, configuration.STATES['CHOOSE_REPORT_VARIANT'])
+
+    def pressed_report_variant(self, message, type):
+        self.bot.send_message(message.chat.id, 'Введите VIN или номер автомобиля',
                               parse_mode='HTML',
                               reply_markup=self.keyboards.menu_with_btn_back())
-        self.DB.set_user_state(message, configuration.STATES['GIBDD_SET_VIN'])
+        self.DB.set_user_state(message, configuration.STATES['CHOOSED_' + type])
 
     def pressed_btn_photo(self, message):
         self.bot.send_message(message.chat.id, 'Введите номер автомобиля',
@@ -147,6 +153,10 @@ class HandlerButtons(Handler):
                 self.pressed_btn_qt_users(message)
             if message.text == configuration.KEYBOARD['DOWNLOAD_PDF']:
                 self.send_pdf_car_report(message)
+            if message.text == configuration.KEYBOARD['REPORT_LIGHT_VARIANT']:
+                self.pressed_report_variant(message, 'LIGHT')
+            if message.text == configuration.KEYBOARD['REPORT_PRO_VARIANT']:
+                self.pressed_report_variant(message, 'PRO')
 
             # работа с оценкой авто
 

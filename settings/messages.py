@@ -1,5 +1,30 @@
 from emoji import emojize
 
+
+def variants_message():
+
+    message = f"<b>Доступны следующие варианты отчетов</b>\n\n" \
+              f"<b>📋 Отчет Лайт:</b>\n\n" \
+              f"⚙ Общие сведения об авто\n" \
+              f"🕺 История владения\n" \
+              f"🏦 Сведения о залогах\n" \
+              f"⛔ Сведения об ограничениях\n" \
+              f"👮‍♂ Сведения о розыске\n" \
+              f"🚧 Сведения о ДТП\n" \
+              f"📰 Сведения о штрафах\n" \
+              f"👔 Сведения о страховке\n" \
+              f"🚕 Сведения о работе в такси\n" \
+              f"📷 Фото авто \n" \
+              f"🛣 Примерный пробег\n\n" \
+              f"<b>📋 Отчет MAX:</b>\n\n" \
+              f"Включает в себя <b>Отчет Лайт</b>, а также: \n\n" \
+              f"💼 Страховые выплаты \n" \
+              f"🛠 Расчеты ремонтных работ \n" \
+              f"💻 История размещения объявлений \n"
+
+    return message
+
+
 def info_message(version, author, reports=None):
     message = f"<b>Добро пожаловать к боту Checkita!</b>\n\n" \
               f"Данный бот разработан для получения информации актуальных" \
@@ -18,66 +43,145 @@ def info_message(version, author, reports=None):
     return message
 
 
-# Рендер отчета по авто
+# Рендер отчета по авто (старый вариант)
 
-def car_report_message(data):
-    try:
-        vehicle = data['gibdd']['vehicle']
-        message_car = f"<b>📋 {vehicle['model'].replace('БЕЗ МОДЕЛИ ', '')} {data['report_id']} </b>\n\n"
-        if 'count' in data["restrict"]:
-            print('restrict true')
-            if data["restrict"]["count"] == 0:
+# def car_report_message_old(data):
+#     try:
+#         vehicle = data['gibdd']['vehicle']
+#         message_car = f"<b>📋 {vehicle['model'].replace('БЕЗ МОДЕЛИ ', '')} {data['report_id']} </b>\n\n"
+#         if 'count' in data["restrict"]:
+#             print('restrict true')
+#             if data["restrict"]["count"] == 0:
+#                 message_car += f"✅ Ограничения не найдены\n"
+#             else:
+#                 message_car += f"❌ Найдены ограничения\n"
+#         else:
+#             print('restrict false')
+#         message_car += f"🚶 Количество владельцев в ПТС: {len(data['gibdd']['ownershipPeriod'])}\n"
+#         if 'count' in data["wanted"]:
+#             print('wanted true')
+#             if data["wanted"]["count"] == 0:
+#                 message_car += f"✅ Нет сведений о розыске\n"
+#             else:
+#                 message_car += f"❌ Найдены сведения о розыске\n"
+#         else:
+#             print('wanted false')
+#         if 'count' in data["osago"]:
+#             if data["osago"]["count"] == 0:
+#                 message_car += f"❌ Полис ОСАГО не найден\n"
+#             else:
+#                 message_car += f"✅ Найден полис ОСАГО\n"
+#                 message_car += f"✅ Госномер: {data['osago']['rez'][0]['regnum']}\n"
+#         if 'num' in data["notary"]:
+#             print('notary true')
+#             if data["notary"]["num"] == 0:
+#                 message_car += f"✅ Не в залоге\n"
+#             else:
+#                 message_car += f"❌ Найдены сведения о залоге\n"
+#         else:
+#             print('notary false')
+#         if 'count' in data["company"]:
+#             print('company true')
+#             if data["company"]["count"] == 0:
+#                 message_car += f"✅ Отзывные компании не найдены\n"
+#             else:
+#                 message_car += f"❌ Найдены отзывные компании\n"
+#         else:
+#             print('company false')
+#         if 'count' in data["dtp"]:
+#             if data["dtp"]["count"] == 0:
+#                 message_car += f"✅ ДТП не найдены\n"
+#             else:
+#                 message_car += f"❌ Авто был в ДТП\n"
+#         if len(data["taxi"]["records"]) == 0:
+#             message_car += f"✅ Нет сведений о работе в такси\n\n"
+#         else:
+#             message_car += f"🚕 Авто работал в такси\n\n"
+#         message_car += f"⬇ Скачайте отчет в PDF ⬇\n\n"
+#
+#         message = message_car
+#         return message
+#     except KeyError:
+#         return 'Проблема на стороне API. Обратитесь к разработчику'
+
+
+# Рендер отчета по авто (спектрум)
+
+def car_report_message_spcr(data_inc):
+    # try:
+        data = data_inc['data'][0]['content']
+        vehicle = data['tech_data']
+        message_car = f"<b>📋 {vehicle['brand']['name']['original'].upper().replace('БЕЗ МОДЕЛИ ', '')} " \
+                      f"{data['identifiers']['vehicle']['vin']} </b>\n\n"
+        if data.get("restrictions", None):
+            if not data["restrictions"]["registration_actions"]["has_restrictions"]:
+                print('restrict true')
                 message_car += f"✅ Ограничения не найдены\n"
             else:
+                print('restrict false')
                 message_car += f"❌ Найдены ограничения\n"
         else:
-            print('restrict false')
-        message_car += f"🚶 Количество владельцев в ПТС: {len(data['gibdd']['ownershipPeriod'])}\n"
-        if 'count' in data["wanted"]:
-            print('wanted true')
-            if data["wanted"]["count"] == 0:
+            print('restrict info not available')
+        message_car += f"🚶 Количество владельцев в ПТС: {data['ownership']['history']['count']}\n"
+        message_car += f"✅ Госномер: {data['identifiers']['vehicle']['reg_num']}\n"
+        if not data['additional_info']['vehicle']['passport']['has_dublicate']:
+            message_car += f"✅ ПТС: Оригинал, {data['identifiers']['vehicle']['pts']}\n"
+        else:
+            message_car += f"✅ ПТС: Дубликат, {data['identifiers']['vehicle']['pts']}\n"
+        message_car += f"✅ СТС: {data['identifiers']['vehicle']['sts']}\n"
+        if data.get("stealings", None):
+            if not data["stealings"]["is_wanted"]:
+                print('wanted true')
                 message_car += f"✅ Нет сведений о розыске\n"
             else:
+                print('wanted false')
                 message_car += f"❌ Найдены сведения о розыске\n"
         else:
-            print('wanted false')
-        if 'count' in data["osago"]:
-            if data["osago"]["count"] == 0:
+            print('wanted info not available')
+        if data.get("insurance", None):
+            if data["insurance"]["osago"]["count"] == 0:
                 message_car += f"❌ Полис ОСАГО не найден\n"
             else:
                 message_car += f"✅ Найден полис ОСАГО\n"
-                message_car += f"✅ Госномер: {data['osago']['rez'][0]['regnum']}\n"
-        if 'num' in data["notary"]:
-            print('notary true')
-            if data["notary"]["num"] == 0:
+        if data.get("pledges", None):
+            if data["pledges"]["count"] == 0:
+                print('pledges true')
                 message_car += f"✅ Не в залоге\n"
             else:
+                print('pledges false')
                 message_car += f"❌ Найдены сведения о залоге\n"
         else:
-            print('notary false')
-        if 'count' in data["company"]:
-            print('company true')
-            if data["company"]["count"] == 0:
-                message_car += f"✅ Отзывные компании не найдены\n"
-            else:
-                message_car += f"❌ Найдены отзывные компании\n"
-        else:
-            print('company false')
-        if 'count' in data["dtp"]:
-            if data["dtp"]["count"] == 0:
+            print('pledges info not available')
+        # if data.get("accidents", None):
+        #     if data["company"]["count"] == 0:
+        #         message_car += f"✅ Отзывные компании не найдены\n"
+        #     else:
+        #         message_car += f"❌ Найдены отзывные компании\n"
+        # else:
+        #     print('company false')
+        if data.get("accidents", None):
+            if not data["accidents"]["has_accidents"]:
                 message_car += f"✅ ДТП не найдены\n"
             else:
                 message_car += f"❌ Авто был в ДТП\n"
-        if len(data["taxi"]["records"]) == 0:
-            message_car += f"✅ Нет сведений о работе в такси\n\n"
         else:
-            message_car += f"🚕 Авто работал в такси\n\n"
+            print('accidents info not available')
+        if data.get("taxi", None):
+            if not data["taxi"]["used_in_taxi"]:
+                print('taxi true')
+                message_car += f"✅ Нет сведений о работе в такси\n\n"
+            else:
+                print('taxi false')
+                message_car += f"❌ Найдены сведения о работе в такси\n\n"
+        else:
+            print('taxi info not available')
+
         message_car += f"⬇ Скачайте отчет в PDF ⬇\n\n"
 
-        message = message_car
-        return message
-    except KeyError:
-        return 'Проблема на стороне API. Обратитесь к разработчику'
+
+        return message_car
+    # except KeyError:
+    #     return 'Проблема на стороне API. Обратитесь к разработчику'
 
 
 # Рендер отчета по штрафам
